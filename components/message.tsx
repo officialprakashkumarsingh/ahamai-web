@@ -34,7 +34,11 @@ export function BotMessage({
         ]}
         remarkPlugins={[remarkGfm, remarkMath]}
         className={cn(
-          'prose-sm prose-neutral prose-a:text-accent-foreground/50',
+          'prose prose-neutral prose-a:text-accent-foreground/50',
+          'prose-p:text-[15px] prose-p:leading-7 prose-p:mb-4',
+          'prose-li:text-[15px] prose-li:leading-7',
+          'prose-headings:mb-3 prose-headings:mt-5',
+          'max-w-none',
           className
         )}
       >
@@ -48,7 +52,11 @@ export function BotMessage({
       rehypePlugins={[[rehypeExternalLinks, { target: '_blank' }]]}
       remarkPlugins={[remarkGfm]}
       className={cn(
-        'prose-sm prose-neutral prose-a:text-accent-foreground/50',
+        'prose prose-neutral prose-a:text-accent-foreground/50',
+        'prose-p:text-[15px] prose-p:leading-7 prose-p:mb-4',
+        'prose-li:text-[15px] prose-li:leading-7',
+        'prose-headings:mb-3 prose-headings:mt-5',
+        'max-w-none',
         className
       )}
       components={{

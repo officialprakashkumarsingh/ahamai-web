@@ -36,7 +36,7 @@ function IconLogo({ className, ...props }: React.ComponentProps<'div'>) {
       
       {/* Black circle background */}
       <svg width="32" height="32" viewBox="0 0 32 32" className="w-full h-full">
-        <circle cx="16" cy="16" r="15" fill="black" />
+        <circle cx="16" cy="16" r="15" fill="#1a1a1a" />
         
         {/* Left eye */}
         <g className="eye">

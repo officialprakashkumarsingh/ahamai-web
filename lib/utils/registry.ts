@@ -110,48 +110,38 @@ export function getModel(model: string, modelConfig?: any) {
   // Handle custom OpenAI-compatible provider
   if (provider === 'openai-compatible') {
     console.log('getModel: Processing OpenAI-compatible model')
+    const modelName = modelNameParts.join(':')
     
-    // Additional validation for empty model names
     if (!modelName || modelName.trim() === '') {
       console.error('getModel: Empty model name for OpenAI-compatible provider')
       throw new Error('OpenAI-compatible model name cannot be empty. Please configure your OpenAI-compatible endpoint with a valid model name.')
     }
     
-    // First check if model config has OpenAI compatible settings
-    if (modelConfig?.openaiCompatibleConfig) {
-      const config = modelConfig.openaiCompatibleConfig
-      console.log('getModel: Using model config for OpenAI compatible:', config)
-      
-      if (config.enabled && config.apiKey && config.baseURL) {
+    // First check user settings (in browser)
+    if (typeof window !== 'undefined') {
+      const settings = getOpenAICompatibleSettings()
+      if (settings.enabled && settings.apiKey && settings.baseURL) {
+        console.log('getModel: Creating OpenAI-compatible model from user settings')
         try {
           const provider = getOrCreateOpenAICompatibleProvider({
-            apiKey: config.apiKey,
-            baseURL: config.baseURL
+            baseURL: settings.baseURL,
+            apiKey: settings.apiKey
           })
           return provider(modelName)
         } catch (error) {
-          console.error('Error creating OpenAI compatible model with config:', error)
+          console.error('Error creating OpenAI-compatible model:', error)
           throw new Error(`Failed to create OpenAI-compatible model: ${error instanceof Error ? error.message : 'Unknown error'}`)
         }
       }
     }
     
-    // Try client-side settings if available
-    const customProvider = getCustomOpenAIProvider()
-    if (customProvider) {
-      try {
-        return customProvider(modelName)
-      } catch (error) {
-        console.error('Error creating custom OpenAI provider model:', error)
-      }
-    }
-    
-    // Fallback to environment variables
+    // Then check environment variables (server-side)
     if (process.env.OPENAI_COMPATIBLE_API_KEY && process.env.OPENAI_COMPATIBLE_API_BASE_URL) {
+      console.log('getModel: Creating OpenAI-compatible model from environment variables')
       try {
         const provider = getOrCreateOpenAICompatibleProvider({
-          apiKey: process.env.OPENAI_COMPATIBLE_API_KEY,
-          baseURL: process.env.OPENAI_COMPATIBLE_API_BASE_URL
+          baseURL: process.env.OPENAI_COMPATIBLE_API_BASE_URL,
+          apiKey: process.env.OPENAI_COMPATIBLE_API_KEY
         })
         return provider(modelName)
       } catch (error) {
@@ -160,6 +150,8 @@ export function getModel(model: string, modelConfig?: any) {
       }
     }
     
+    // Only throw error if provider is truly not configured
+    console.warn('OpenAI Compatible provider is not configured')
     throw new Error('OpenAI Compatible provider is not configured. Please configure your API key and base URL in settings.')
   }
   
@@ -287,6 +279,11 @@ export function isToolCallSupported(model?: string) {
 
   if (provider === 'google') {
     return false
+  }
+
+  // OpenAI-compatible models should support tool calls by default
+  if (provider === 'openai-compatible') {
+    return true
   }
 
   // Deepseek R1 is not supported

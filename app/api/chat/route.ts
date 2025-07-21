@@ -94,15 +94,22 @@ export async function POST(req: Request) {
       }
     }
 
-    if (
+    // For OpenAI-compatible models, we need special handling since the settings are client-side
+    if (selectedModel.providerId === 'openai-compatible') {
+      // Check if we have environment variables
+      const hasEnvConfig = process.env.OPENAI_COMPATIBLE_API_KEY && process.env.OPENAI_COMPATIBLE_API_BASE_URL
+      
+      // If no env config and model is not explicitly enabled, it might still work with client settings
+      // So we'll let it proceed and handle errors during streaming
+      if (!hasEnvConfig && selectedModel.enabled !== true) {
+        console.log('OpenAI-compatible model selected without server-side config, proceeding with client settings')
+      }
+    } else if (
       !isProviderEnabled(selectedModel.providerId, selectedModel) ||
       selectedModel.enabled === false
     ) {
-      // Don't auto-switch models as per user request
-      // Instead provide clear error message about the specific provider
-      const errorMessage = selectedModel.providerId === 'openai-compatible' 
-        ? 'OpenAI Compatible provider is not configured. Please check your API key and base URL in settings.'
-        : `Provider "${selectedModel.provider}" (${selectedModel.providerId}) is not configured or enabled. Please configure the required API keys or select a different model.`
+      // For other providers, enforce the check
+      const errorMessage = `Provider "${selectedModel.provider}" (${selectedModel.providerId}) is not configured or enabled. Please configure the required API keys or select a different model.`
       
       return new Response(
         JSON.stringify({
@@ -113,10 +120,7 @@ export async function POST(req: Request) {
         }),
         {
           status: 503,
-          statusText: 'Service Unavailable',
-          headers: {
-            'Content-Type': 'application/json'
-          }
+          headers: { 'Content-Type': 'application/json' }
         }
       )
     }

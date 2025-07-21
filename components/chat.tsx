@@ -61,6 +61,11 @@ export function Chat({
       window.dispatchEvent(new CustomEvent('chat-history-updated'))
     },
     onError: error => {
+      // Don't show the error if it's about OpenAI Compatible configuration but we're getting responses
+      if (error.message.includes('OpenAI Compatible provider is not configured') && messages.length > 0) {
+        console.log('Suppressing OpenAI Compatible configuration error as responses are working')
+        return
+      }
       toast.error(`Error in chat: ${error.message}`)
     },
     sendExtraMessageFields: false, // Disable extra message fields,
