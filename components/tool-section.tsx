@@ -6,6 +6,7 @@ import RetrieveSection from './retrieve-section'
 import { SearchSection } from './search-section'
 import { VideoSearchSection } from './video-search-section'
 import { ImageGenerationToolSection } from './image-generation-tool-section'
+import { StockDataSection } from './stock-data-section'
 
 interface ToolSectionProps {
   tool: ToolInvocation
@@ -83,6 +84,14 @@ export function ToolSection({
     case 'generate_image':
       return (
         <ImageGenerationToolSection
+          tool={tool}
+          isOpen={isOpen}
+          onOpenChange={onOpenChange}
+        />
+      )
+    case 'get_stock_data':
+      return (
+        <StockDataSection
           tool={tool}
           isOpen={isOpen}
           onOpenChange={onOpenChange}

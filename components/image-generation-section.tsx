@@ -1,10 +1,11 @@
 'use client'
 
-import { Download, Loader2, AlertCircle } from 'lucide-react'
+import { Download, Loader2, AlertCircle, ZoomIn } from 'lucide-react'
 import Image from 'next/image'
 import { useState } from 'react'
 import { Button } from './ui/button'
 import { Card } from './ui/card'
+import { Dialog, DialogContent, DialogTrigger } from './ui/dialog'
 import { cn } from '@/lib/utils'
 
 interface GeneratedImage {
@@ -23,6 +24,7 @@ interface ImageGenerationSectionProps {
 export function ImageGenerationSection({ images, isLoading }: ImageGenerationSectionProps) {
   const [loadingStates, setLoadingStates] = useState<{ [key: string]: boolean }>({})
   const [imageErrors, setImageErrors] = useState<{ [key: string]: boolean }>({})
+  const [imageLoading, setImageLoading] = useState<{ [key: string]: boolean }>({})
 
   const handleDownload = async (image: GeneratedImage) => {
     try {
@@ -49,6 +51,15 @@ export function ImageGenerationSection({ images, isLoading }: ImageGenerationSec
 
   const handleImageError = (imageUrl: string) => {
     setImageErrors(prev => ({ ...prev, [imageUrl]: true }))
+    setImageLoading(prev => ({ ...prev, [imageUrl]: false }))
+  }
+
+  const handleImageLoad = (imageUrl: string) => {
+    setImageLoading(prev => ({ ...prev, [imageUrl]: false }))
+  }
+
+  const handleImageLoadStart = (imageUrl: string) => {
+    setImageLoading(prev => ({ ...prev, [imageUrl]: true }))
   }
 
   if (isLoading) {
@@ -69,8 +80,8 @@ export function ImageGenerationSection({ images, isLoading }: ImageGenerationSec
       <h3 className="text-base sm:text-lg font-semibold px-1">Generated Images</h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
         {images.map((image, index) => (
-          <Card key={index} className="overflow-hidden bg-card/50 border shadow-sm">
-            <div className="relative aspect-square">
+          <Card key={index} className="overflow-hidden bg-card/50 border shadow-sm hover:shadow-md transition-shadow">
+            <div className="relative aspect-square group">
               {imageErrors[image.url] ? (
                 <div className="absolute inset-0 flex items-center justify-center bg-muted">
                   <div className="text-center p-4">
@@ -79,16 +90,49 @@ export function ImageGenerationSection({ images, isLoading }: ImageGenerationSec
                   </div>
                 </div>
               ) : (
-                <Image
-                  src={image.url}
-                  alt={image.prompt}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 640px) 100vw, 50vw"
-                  unoptimized
-                  onError={() => handleImageError(image.url)}
-                  priority={index < 2}
-                />
+                <>
+                  {imageLoading[image.url] && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-muted">
+                      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    </div>
+                  )}
+                  <Image
+                    src={image.url}
+                    alt={image.prompt}
+                    fill
+                    className="object-cover transition-opacity"
+                    sizes="(max-width: 640px) 100vw, 50vw"
+                    unoptimized={false}
+                    quality={90}
+                    onError={() => handleImageError(image.url)}
+                    onLoad={() => handleImageLoad(image.url)}
+                    onLoadStart={() => handleImageLoadStart(image.url)}
+                    priority={index < 2}
+                  />
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 hover:bg-black/70 text-white"
+                      >
+                        <ZoomIn className="h-4 w-4" />
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-4xl w-full h-full max-h-[90vh] p-0">
+                      <div className="relative w-full h-full">
+                        <Image
+                          src={image.url}
+                          alt={image.prompt}
+                          fill
+                          className="object-contain"
+                          unoptimized={false}
+                          quality={100}
+                        />
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </>
               )}
               <div className="absolute top-2 right-2 bg-black/70 text-white px-2 py-1 rounded text-xs font-medium">
                 {image.model.toUpperCase()}

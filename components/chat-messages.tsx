@@ -121,7 +121,7 @@ export function ChatMessages({
       role="list"
       aria-roledescription="chat messages"
       className={cn(
-        'relative size-full pt-24 sm:pt-28 md:pt-32',
+        'relative size-full pt-20 sm:pt-22 md:pt-24',
         sections.length > 0 ? 'flex-1 overflow-y-auto scroll-smooth' : ''
       )}
       style={{
@@ -137,7 +137,7 @@ export function ChatMessages({
             className="chat-section mb-4 sm:mb-6 md:mb-8"
             style={
               sectionIndex === sections.length - 1
-                ? { minHeight: 'calc(-280px + 100dvh)' }
+                ? { minHeight: 'calc(-200px + 100dvh)', paddingBottom: '120px' }
                 : {}
             }
           >

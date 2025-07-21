@@ -50,53 +50,57 @@ export const RelatedQuestions: React.FC<RelatedQuestionsProps> = ({
 
   if (relatedQuestions.items.length === 0 && isLoading) {
     return (
+      <div className="mb-24 sm:mb-20">
+        <CollapsibleMessage
+          role="assistant"
+          isCollapsible={false}
+          isOpen={isOpen}
+          onOpenChange={onOpenChange}
+          showIcon={false}
+        >
+          <Skeleton className="w-full h-6" />
+        </CollapsibleMessage>
+      </div>
+    )
+  }
+
+  return (
+    <div className="mb-24 sm:mb-20">
       <CollapsibleMessage
         role="assistant"
         isCollapsible={false}
         isOpen={isOpen}
         onOpenChange={onOpenChange}
         showIcon={false}
+        showBorder={false}
       >
-        <Skeleton className="w-full h-6" />
+        <Section title="Related" className="pt-0 pb-4">
+          <div className="flex flex-col gap-1">
+            {Array.isArray(relatedQuestions.items) ? (
+              relatedQuestions.items
+                ?.filter(item => item?.query !== '')
+                .map((item, index) => (
+                  <div className="flex items-start w-full p-1 rounded-md hover:bg-accent/20 transition-colors" key={index}>
+                    <ArrowRight className="h-4 w-4 mr-3 mt-1 flex-shrink-0 text-accent-foreground/50" />
+                    <Button
+                      variant="link"
+                      className="flex-1 justify-start px-0 py-1 h-fit font-medium text-accent-foreground/70 hover:text-accent-foreground whitespace-normal text-left text-sm"
+                      type="submit"
+                      name={'related_query'}
+                      value={item?.query}
+                      onClick={() => onQuerySelect(item?.query)}
+                    >
+                      {item?.query}
+                    </Button>
+                  </div>
+                ))
+            ) : (
+              <div>Not an array</div>
+            )}
+          </div>
+        </Section>
       </CollapsibleMessage>
-    )
-  }
-
-  return (
-    <CollapsibleMessage
-      role="assistant"
-      isCollapsible={false}
-      isOpen={isOpen}
-      onOpenChange={onOpenChange}
-      showIcon={false}
-      showBorder={false}
-    >
-      <Section title="Related" className="pt-0 pb-4">
-        <div className="flex flex-col">
-          {Array.isArray(relatedQuestions.items) ? (
-            relatedQuestions.items
-              ?.filter(item => item?.query !== '')
-              .map((item, index) => (
-                <div className="flex items-start w-full" key={index}>
-                  <ArrowRight className="h-4 w-4 mr-2 mt-1 flex-shrink-0 text-accent-foreground/50" />
-                  <Button
-                    variant="link"
-                    className="flex-1 justify-start px-0 py-1 h-fit font-semibold text-accent-foreground/50 whitespace-normal text-left"
-                    type="submit"
-                    name={'related_query'}
-                    value={item?.query}
-                    onClick={() => onQuerySelect(item?.query)}
-                  >
-                    {item?.query}
-                  </Button>
-                </div>
-              ))
-          ) : (
-            <div>Not an array</div>
-          )}
-        </div>
-      </Section>
-    </CollapsibleMessage>
+    </div>
   )
 }
 export default RelatedQuestions

@@ -115,6 +115,9 @@ export function ChatPanel({
     }
   }
 
+  // Check if this is a follow-up conversation
+  const isFollowUp = messages.length > 0
+
   return (
     <div
       className={cn(
@@ -152,8 +155,8 @@ export function ChatPanel({
           <Textarea
             ref={inputRef}
             name="input"
-            rows={2}
-            maxRows={5}
+            rows={isFollowUp ? 1 : 2}
+            maxRows={isFollowUp ? 3 : 5}
             tabIndex={0}
             onCompositionStart={handleCompositionStart}
             onCompositionEnd={handleCompositionEnd}
@@ -161,7 +164,10 @@ export function ChatPanel({
             spellCheck={false}
             value={input}
             disabled={isLoading || isToolInvocationInProgress()}
-            className="resize-none w-full min-h-12 bg-transparent border-0 p-3 sm:p-4 text-sm placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+            className={cn(
+              "resize-none w-full bg-transparent border-0 p-3 sm:p-4 text-sm placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50",
+              isFollowUp ? "min-h-10" : "min-h-12"
+            )}
             onChange={e => {
               handleInputChange(e)
               setShowEmptyScreen(e.target.value.length === 0)
@@ -190,9 +196,9 @@ export function ChatPanel({
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between p-2 sm:p-3 gap-2 sm:gap-3">
             <div className="flex items-center gap-2 order-2 sm:order-1 flex-wrap">
               <ModelSelector models={models || []} />
-              <SearchModeToggle />
             </div>
             <div className="flex items-center gap-2 justify-end order-1 sm:order-2 min-h-[44px] sm:min-h-auto">
+              <SearchModeToggle />
               {messages.length > 0 && (
                 <Button
                   variant="outline"
@@ -210,10 +216,10 @@ export function ChatPanel({
                 size={'icon'}
                 variant={'outline'}
                 className={cn(
-                  'rounded-full min-h-[44px] min-w-[44px] sm:min-h-10 sm:min-w-10 transition-all duration-200',
+                  'rounded-full min-h-[44px] min-w-[44px] sm:min-h-10 sm:min-w-10 transition-all duration-200 relative',
                   isLoading 
-                    ? 'bg-white hover:bg-gray-100 text-red-600 border-red-600 hover:border-red-700' 
-                    : 'bg-primary hover:bg-primary/90 text-primary-foreground border-primary'
+                    ? 'bg-red-600 hover:bg-red-700 text-white border-red-600 hover:border-red-700 animate-pulse' 
+                    : 'bg-gray-700 hover:bg-gray-600 text-white border-gray-700 hover:border-gray-600'
                 )}
                 disabled={
                   (input.length === 0 && !isLoading) ||
@@ -221,6 +227,9 @@ export function ChatPanel({
                 }
                 onClick={isLoading ? stop : undefined}
               >
+                {isLoading && (
+                  <div className="absolute inset-0 rounded-full border-2 border-white/30 animate-spin border-t-white"></div>
+                )}
                 {isLoading ? <Square size={20} /> : <ArrowUp size={20} />}
               </Button>
             </div>

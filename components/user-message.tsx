@@ -46,7 +46,7 @@ export const UserMessage: React.FC<UserMessageProps> = ({
   return (
     <CollapsibleMessage role="user">
       <div
-        className="flex-1 break-words w-full group outline-none relative"
+        className="flex-1 break-words w-full group outline-none relative pr-12"
         tabIndex={0}
       >
         {isEditing ? (
@@ -69,11 +69,11 @@ export const UserMessage: React.FC<UserMessageProps> = ({
             </div>
           </div>
         ) : (
-          <div className="flex justify-between items-start">
-            <div className="flex-1">{message}</div>
+          <div className="flex justify-between items-start gap-2">
+            <div className="flex-1 pr-2">{message}</div>
             <div
               className={cn(
-                'absolute top-1 right-1 transition-opacity ml-2',
+                'flex-shrink-0 transition-opacity duration-200',
                 'opacity-0',
                 'group-focus-within:opacity-100',
                 'md:opacity-0',
@@ -83,10 +83,10 @@ export const UserMessage: React.FC<UserMessageProps> = ({
               <Button
                 variant="ghost"
                 size="icon"
-                className="rounded-full h-7 w-7"
+                className="rounded-full h-8 w-8 hover:bg-accent"
                 onClick={handleEditClick}
               >
-                <Pencil className="size-3.5" />
+                <Pencil className="size-4" />
               </Button>
             </div>
           </div>
