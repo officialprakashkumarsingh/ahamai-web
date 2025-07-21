@@ -108,8 +108,11 @@ export async function POST(req: Request) {
       !isProviderEnabled(selectedModel.providerId, selectedModel) ||
       selectedModel.enabled === false
     ) {
-      // For other providers, enforce the check
-      const errorMessage = `Provider "${selectedModel.provider}" (${selectedModel.providerId}) is not configured or enabled. Please configure the required API keys or select a different model.`
+      // Don't auto-switch models as per user request
+      // Instead provide clear error message about the specific provider
+      const errorMessage = selectedModel.providerId === 'openai-compatible' 
+        ? 'OpenAI Compatible provider is not configured. Please check your API key and base URL in settings.'
+        : `Provider "${selectedModel.provider}" (${selectedModel.providerId}) is not configured or enabled. Please configure the required API keys or select a different model.`
       
       return new Response(
         JSON.stringify({
