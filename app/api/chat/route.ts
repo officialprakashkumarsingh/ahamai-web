@@ -94,7 +94,17 @@ export async function POST(req: Request) {
       }
     }
 
-    if (
+    // For OpenAI-compatible models, we need special handling since the settings are client-side
+    if (selectedModel.providerId === 'openai-compatible') {
+      // Check if we have environment variables
+      const hasEnvConfig = process.env.OPENAI_COMPATIBLE_API_KEY && process.env.OPENAI_COMPATIBLE_API_BASE_URL
+      
+      // If no env config and model is not explicitly enabled, it might still work with client settings
+      // So we'll let it proceed and handle errors during streaming
+      if (!hasEnvConfig && selectedModel.enabled !== true) {
+        console.log('OpenAI-compatible model selected without server-side config, proceeding with client settings')
+      }
+    } else if (
       !isProviderEnabled(selectedModel.providerId, selectedModel) ||
       selectedModel.enabled === false
     ) {
@@ -113,10 +123,7 @@ export async function POST(req: Request) {
         }),
         {
           status: 503,
-          statusText: 'Service Unavailable',
-          headers: {
-            'Content-Type': 'application/json'
-          }
+          headers: { 'Content-Type': 'application/json' }
         }
       )
     }

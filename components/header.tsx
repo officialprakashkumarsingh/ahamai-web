@@ -18,7 +18,7 @@ export const Header: React.FC<HeaderProps> = ({ user }) => {
   return (
     <header
       className={cn(
-        'absolute top-0 right-0 p-2 sm:p-4 flex justify-between items-center z-50 backdrop-blur-md bg-background/90 transition-[width] duration-200 ease-linear',
+        'fixed top-0 right-0 p-2 sm:p-4 flex justify-between items-center z-[100] backdrop-blur-md bg-background/90 transition-[width] duration-200 ease-linear',
         open ? 'md:w-[calc(100%-var(--sidebar-width))]' : 'md:w-full',
         'w-full'
       )}
