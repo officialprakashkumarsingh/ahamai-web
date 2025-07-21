@@ -66,7 +66,7 @@ export default async function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body
         className={cn(
-          'min-h-screen flex flex-col font-sans antialiased overflow-hidden',
+          'min-h-screen min-h-dvh flex flex-col font-sans antialiased overflow-hidden',
           fontSans.variable
         )}
       >
@@ -78,14 +78,20 @@ export default async function RootLayout({
         >
           <SidebarProvider defaultOpen={false}>
             <AppSidebar />
-            <div className="flex flex-col flex-1 min-w-0">
+            <div className="flex flex-col flex-1 min-w-0 relative">
               <Header user={user} />
-              <main className="flex flex-1 min-h-0 relative">
+              <main className="flex flex-1 min-h-0 relative pt-14 sm:pt-16">
                 <ArtifactRoot>{children}</ArtifactRoot>
               </main>
             </div>
           </SidebarProvider>
-          <Toaster />
+          <Toaster 
+            position="top-center"
+            toastOptions={{
+              duration: 4000,
+              className: 'text-sm',
+            }}
+          />
           <Analytics />
         </ThemeProvider>
       </body>

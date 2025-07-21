@@ -1,6 +1,6 @@
 'use client'
 
-import { useSidebar } from '@/components/ui/sidebar'
+import { useSidebar, SidebarTrigger } from '@/components/ui/sidebar'
 import { cn } from '@/lib/utils'
 import { User } from '@supabase/supabase-js'
 // import Link from 'next/link' // No longer needed directly here for Sign In button
@@ -8,6 +8,7 @@ import React from 'react'
 // import { Button } from './ui/button' // No longer needed directly here for Sign In button
 import GuestMenu from './guest-menu' // Import the new GuestMenu component
 import UserMenu from './user-menu'
+import { IconLogo } from './ui/icons'
 
 interface HeaderProps {
   user: User | null
@@ -18,14 +19,21 @@ export const Header: React.FC<HeaderProps> = ({ user }) => {
   return (
     <header
       className={cn(
-        'absolute top-0 right-0 p-2 sm:p-4 flex justify-between items-center z-50 backdrop-blur-md bg-background/90 transition-[width] duration-200 ease-linear',
+        'fixed top-0 right-0 p-2 sm:p-4 flex justify-between items-center z-50 backdrop-blur-md bg-background/95 transition-[width] duration-200 ease-linear border-b border-border/50',
         open ? 'md:w-[calc(100%-var(--sidebar-width))]' : 'md:w-full',
-        'w-full'
+        'w-full h-14 sm:h-16'
       )}
     >
-      {/* This div can be used for a logo or title on the left if needed */}
-      <div></div>
+      {/* Left side - Logo and Sidebar trigger */}
+      <div className="flex items-center gap-2 sm:gap-3">
+        <SidebarTrigger className="h-8 w-8 sm:h-10 sm:w-10 -ml-1 sm:-ml-2" />
+        <div className="hidden sm:flex items-center gap-2">
+          <IconLogo className="size-5" />
+          <span className="font-semibold text-sm">AhamAI</span>
+        </div>
+      </div>
 
+      {/* Right side - User menu */}
       <div className="flex items-center gap-1 sm:gap-2">
         {user ? <UserMenu user={user} /> : <GuestMenu />}
       </div>

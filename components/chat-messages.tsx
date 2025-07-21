@@ -2,7 +2,7 @@
 
 import { cn } from '@/lib/utils'
 import { ChatRequestOptions, JSONValue, Message } from 'ai'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import { RenderMessage } from './render-message'
 import { ToolSection } from './tool-section'
 import { Spinner } from './ui/spinner'
@@ -44,16 +44,6 @@ export function ChatMessages({
   const [openStates, setOpenStates] = useState<Record<string, boolean>>({})
   const manualToolCallId = 'manual-tool-call'
 
-  useEffect(() => {
-    // Open manual tool call when the last section is a user message
-    if (sections.length > 0) {
-      const lastSection = sections[sections.length - 1]
-      if (lastSection.userMessage.role === 'user') {
-        setOpenStates({ [manualToolCallId]: true })
-      }
-    }
-  }, [sections])
-
   // get last tool data for manual tool call
   const lastToolData = useMemo(() => {
     if (!data || !Array.isArray(data) || data.length === 0) return null
@@ -79,40 +69,50 @@ export function ChatMessages({
     }
   }, [data])
 
-  if (!sections.length) return null
-
-  // Get all messages as a flattened array
-  const allMessages = sections.flatMap(section => [
+  // Get all messages as a flattened array with memoization
+  const allMessages = useMemo(() => sections.flatMap(section => [
     section.userMessage,
     ...section.assistantMessages
-  ])
+  ]), [sections])
 
-  const lastUserIndex =
-    allMessages.length -
-    1 -
-    [...allMessages].reverse().findIndex(msg => msg.role === 'user')
+  const lastUserIndex = useMemo(() => {
+    return allMessages.length - 1 - [...allMessages].reverse().findIndex(msg => msg.role === 'user')
+  }, [allMessages])
 
   // Check if loading indicator should be shown
-  const showLoading =
+  const showLoading = useMemo(() => 
     isLoading &&
     sections.length > 0 &&
     sections[sections.length - 1].assistantMessages.length === 0
+  , [isLoading, sections])
 
-  const getIsOpen = (id: string) => {
+  const getIsOpen = useCallback((id: string) => {
     if (id.includes('call')) {
       return openStates[id] ?? true
     }
     const baseId = id.endsWith('-related') ? id.slice(0, -8) : id
     const index = allMessages.findIndex(msg => msg.id === baseId)
     return openStates[id] ?? index >= lastUserIndex
-  }
+  }, [openStates, allMessages, lastUserIndex])
 
-  const handleOpenChange = (id: string, open: boolean) => {
+  const handleOpenChange = useCallback((id: string, open: boolean) => {
     setOpenStates(prev => ({
       ...prev,
       [id]: open
     }))
-  }
+  }, [])
+
+  useEffect(() => {
+    // Open manual tool call when the last section is a user message
+    if (sections.length > 0) {
+      const lastSection = sections[sections.length - 1]
+      if (lastSection.userMessage.role === 'user') {
+        setOpenStates({ [manualToolCallId]: true })
+      }
+    }
+  }, [sections])
+
+  if (!sections.length) return null
 
   return (
     <div
@@ -122,23 +122,27 @@ export function ChatMessages({
       aria-roledescription="chat messages"
       className={cn(
         'relative size-full pt-16 sm:pt-20 md:pt-24',
-        sections.length > 0 ? 'flex-1 overflow-y-auto' : ''
+        sections.length > 0 ? 'flex-1 overflow-y-auto scroll-smooth' : ''
       )}
+      style={{
+        WebkitOverflowScrolling: 'touch',
+        scrollBehavior: 'smooth'
+      }}
     >
-      <div className="relative mx-auto w-full max-w-3xl px-4 sm:px-6 md:px-8">
+      <div className="relative mx-auto w-full max-w-3xl px-3 sm:px-6 md:px-8">
         {sections.map((section, sectionIndex) => (
           <div
             key={section.id}
             id={`section-${section.id}`}
-            className="chat-section mb-6 sm:mb-8"
+            className="chat-section mb-4 sm:mb-6 md:mb-8"
             style={
               sectionIndex === sections.length - 1
-                ? { minHeight: 'calc(-228px + 100dvh)' }
+                ? { minHeight: 'calc(-200px + 100dvh)' }
                 : {}
             }
           >
             {/* User message */}
-            <div className="flex flex-col gap-2 sm:gap-4 mb-3 sm:mb-4">
+            <div className="flex flex-col gap-2 sm:gap-3 md:gap-4 mb-3 sm:mb-4">
               <RenderMessage
                 message={section.userMessage}
                 messageId={section.userMessage.id}
@@ -155,7 +159,7 @@ export function ChatMessages({
 
             {/* Assistant messages */}
             {section.assistantMessages.map(assistantMessage => (
-              <div key={assistantMessage.id} className="flex flex-col gap-2 sm:gap-4">
+              <div key={assistantMessage.id} className="flex flex-col gap-2 sm:gap-3 md:gap-4 mb-2 sm:mb-3">
                 <RenderMessage
                   message={assistantMessage}
                   messageId={assistantMessage.id}
