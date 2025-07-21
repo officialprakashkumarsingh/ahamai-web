@@ -38,6 +38,7 @@ Important:
 interface ManualResearcherConfig {
   messages: CoreMessage[]
   model: string
+  modelConfig?: any
   isSearchEnabled?: boolean
 }
 
@@ -46,6 +47,7 @@ type ManualResearcherReturn = Parameters<typeof streamText>[0]
 export function manualResearcher({
   messages,
   model,
+  modelConfig,
   isSearchEnabled = true
 }: ManualResearcherConfig): ManualResearcherReturn {
   try {
@@ -55,12 +57,9 @@ export function manualResearcher({
       : SEARCH_DISABLED_PROMPT
 
     return {
-      model: getModel(model),
+      model: getModel(model, modelConfig),
       system: `${systemPrompt}\nCurrent date and time: ${currentDate}`,
       messages,
-      temperature: 0.6,
-      topP: 1,
-      topK: 40,
       experimental_transform: smoothStream()
     }
   } catch (error) {

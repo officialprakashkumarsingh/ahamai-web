@@ -52,6 +52,7 @@ export function createToolCallingStreamResponse(config: BaseStreamConfig) {
         let researcherConfig = await researcher({
           messages: truncatedMessages,
           model: modelId,
+          modelConfig: model, // Pass the full model object
           searchMode
         })
 

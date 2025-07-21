@@ -34,14 +34,33 @@ export const registry = createProviderRegistry({
     }),
     languageModel: fireworks
   },
-  'openai-compatible': createOpenAI({
-    apiKey: process.env.OPENAI_COMPATIBLE_API_KEY,
-    baseURL: process.env.OPENAI_COMPATIBLE_API_BASE_URL,
-    compatibility: 'strict', // Ensure OpenAI compatibility
-    fetch: fetch // Explicitly set fetch for better compatibility
-  }),
   xai
 })
+
+// Create a separate registry for OpenAI compatible providers
+const openaiCompatibleProviders = new Map<string, ReturnType<typeof createOpenAI>>()
+
+function getOrCreateOpenAICompatibleProvider(config: {
+  apiKey: string
+  baseURL: string
+}): ReturnType<typeof createOpenAI> {
+  const key = `${config.baseURL}:${config.apiKey}`
+  
+  if (!openaiCompatibleProviders.has(key)) {
+    const provider = createOpenAI({
+      apiKey: config.apiKey,
+      baseURL: config.baseURL,
+      compatibility: 'strict',
+      fetch: fetch,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+    openaiCompatibleProviders.set(key, provider)
+  }
+  
+  return openaiCompatibleProviders.get(key)!
+}
 
 function getCustomOpenAIProvider() {
   if (typeof window !== 'undefined') {
@@ -61,13 +80,26 @@ function getCustomOpenAIProvider() {
   return null
 }
 
-export function getModel(model: string) {
+export function getModel(model: string, modelConfig?: any) {
   console.log('getModel: Processing model string:', model)
+  console.log('getModel: Model config:', modelConfig)
+  
+  // Validate the model string
+  if (!model || typeof model !== 'string') {
+    console.error('getModel: Invalid model string:', model)
+    throw new Error('Model string is required and must be a valid string')
+  }
   
   const [provider, ...modelNameParts] = model.split(':') ?? []
   const modelName = modelNameParts.join(':')
   
   console.log('getModel: Parsed provider:', provider, 'modelName:', modelName)
+  
+  // Validate that we have both provider and model name
+  if (!provider || !modelName) {
+    console.error('getModel: Invalid model format. Provider:', provider, 'ModelName:', modelName)
+    throw new Error(`Invalid model format: "${model}". Expected format: "provider:modelname"`)
+  }
   
   // Validate model name to prevent template models from being used
   if (modelName.startsWith('<') && modelName.endsWith('>')) {
@@ -85,22 +117,50 @@ export function getModel(model: string) {
       throw new Error('OpenAI-compatible model name cannot be empty. Please configure your OpenAI-compatible endpoint with a valid model name.')
     }
     
+    // First check if model config has OpenAI compatible settings
+    if (modelConfig?.openaiCompatibleConfig) {
+      const config = modelConfig.openaiCompatibleConfig
+      console.log('getModel: Using model config for OpenAI compatible:', config)
+      
+      if (config.enabled && config.apiKey && config.baseURL) {
+        try {
+          const provider = getOrCreateOpenAICompatibleProvider({
+            apiKey: config.apiKey,
+            baseURL: config.baseURL
+          })
+          return provider(modelName)
+        } catch (error) {
+          console.error('Error creating OpenAI compatible model with config:', error)
+          throw new Error(`Failed to create OpenAI-compatible model: ${error instanceof Error ? error.message : 'Unknown error'}`)
+        }
+      }
+    }
+    
+    // Try client-side settings if available
     const customProvider = getCustomOpenAIProvider()
     if (customProvider) {
       try {
         return customProvider(modelName)
       } catch (error) {
         console.error('Error creating custom OpenAI provider model:', error)
-        // Fallback to environment-configured provider
       }
     }
-    // Fallback to environment-configured provider
-    try {
-      return registry.languageModel(model as Parameters<typeof registry.languageModel>[0])
-    } catch (error) {
-      console.error('Error with registry OpenAI compatible model:', error)
-      throw error
+    
+    // Fallback to environment variables
+    if (process.env.OPENAI_COMPATIBLE_API_KEY && process.env.OPENAI_COMPATIBLE_API_BASE_URL) {
+      try {
+        const provider = getOrCreateOpenAICompatibleProvider({
+          apiKey: process.env.OPENAI_COMPATIBLE_API_KEY,
+          baseURL: process.env.OPENAI_COMPATIBLE_API_BASE_URL
+        })
+        return provider(modelName)
+      } catch (error) {
+        console.error('Error creating OpenAI-compatible model from env:', error)
+        throw new Error(`Failed to create OpenAI-compatible model: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      }
     }
+    
+    throw new Error('OpenAI Compatible provider is not configured. Please configure your API key and base URL in settings.')
   }
   
   if (model.includes('ollama')) {

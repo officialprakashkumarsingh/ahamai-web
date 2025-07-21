@@ -46,12 +46,14 @@ export function createManualToolStreamResponse(config: BaseStreamConfig) {
             truncatedMessages,
             dataStream,
             toolCallModelId,
+            model, // Pass the full model object
             searchMode
           )
 
         const researcherConfig = manualResearcher({
           messages: [...truncatedMessages, ...toolCallMessages],
           model: modelId,
+          modelConfig: model, // Pass the full model object
           isSearchEnabled: searchMode
         })
 

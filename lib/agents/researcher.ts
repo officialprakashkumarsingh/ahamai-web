@@ -38,22 +38,25 @@ type ResearcherReturn = Parameters<typeof streamText>[0]
 export function researcher({
   messages,
   model,
+  modelConfig,
   searchMode
 }: {
   messages: CoreMessage[]
   model: string
+  modelConfig?: any
   searchMode: boolean
 }): ResearcherReturn {
   try {
     const currentDate = new Date().toLocaleString()
 
     // Create model-specific tools
+    const modelInstance = getModel(model, modelConfig)
     const searchTool = createSearchTool(model)
     const videoSearchTool = createVideoSearchTool(model)
     const askQuestionTool = createQuestionTool(model)
 
     return {
-      model: getModel(model),
+      model: modelInstance,
       system: `${SYSTEM_PROMPT}\nCurrent date and time: ${currentDate}`,
       messages,
       tools: {
