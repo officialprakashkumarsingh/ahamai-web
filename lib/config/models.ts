@@ -50,7 +50,11 @@ export async function getModels(): Promise<Model[]> {
       const config = JSON.parse(text)
       if (Array.isArray(config.models) && config.models.every(validateModel)) {
         console.log('Successfully loaded models from URL')
-        return config.models
+        // Filter out template models that start/end with angle brackets
+        const filteredModels = config.models.filter((model: Model) => 
+          !model.id.startsWith('<') && !model.id.endsWith('>')
+        )
+        return filteredModels
       }
     } catch (error: any) {
       // Fallback to default models if fetch fails
@@ -64,7 +68,11 @@ export async function getModels(): Promise<Model[]> {
         defaultModels.models.every(validateModel)
       ) {
         console.log('Successfully loaded default models')
-        return defaultModels.models
+        // Filter out template models that start/end with angle brackets
+        const filteredDefaultModels = defaultModels.models.filter((model: Model) => 
+          !model.id.startsWith('<') && !model.id.endsWith('>')
+        )
+        return filteredDefaultModels
       }
     }
   } catch (error) {

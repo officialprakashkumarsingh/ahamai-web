@@ -65,8 +65,18 @@ export function getModel(model: string) {
   const [provider, ...modelNameParts] = model.split(':') ?? []
   const modelName = modelNameParts.join(':')
   
+  // Validate model name to prevent template models from being used
+  if (modelName.startsWith('<') && modelName.endsWith('>')) {
+    throw new Error(`Invalid model name: ${modelName}. This appears to be a template placeholder. Please configure your OpenAI-compatible endpoint with a valid model name.`)
+  }
+  
   // Handle custom OpenAI-compatible provider
   if (provider === 'openai-compatible') {
+    // Additional validation for empty model names
+    if (!modelName || modelName.trim() === '') {
+      throw new Error('OpenAI-compatible model name cannot be empty. Please configure your OpenAI-compatible endpoint with a valid model name.')
+    }
+    
     const customProvider = getCustomOpenAIProvider()
     if (customProvider) {
       try {

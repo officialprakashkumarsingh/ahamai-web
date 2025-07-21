@@ -45,6 +45,47 @@ export async function POST(req: Request) {
       }
     }
 
+    // Additional validation for OpenAI-compatible models
+    if (selectedModel.providerId === 'openai-compatible') {
+      // Check if the model ID is a template placeholder
+      if (selectedModel.id.startsWith('<') && selectedModel.id.endsWith('>')) {
+        return new Response(
+          JSON.stringify({
+            error: 'Invalid model configuration',
+            details: 'Template model placeholder detected. Please configure your OpenAI-compatible endpoint with a valid model name in Settings.',
+            provider: selectedModel.provider,
+            providerId: selectedModel.providerId
+          }),
+          {
+            status: 400,
+            statusText: 'Bad Request',
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }
+        )
+      }
+      
+      // Check if the model ID is empty
+      if (!selectedModel.id || selectedModel.id.trim() === '') {
+        return new Response(
+          JSON.stringify({
+            error: 'Invalid model configuration',
+            details: 'Model name cannot be empty. Please configure your OpenAI-compatible endpoint with a valid model name in Settings.',
+            provider: selectedModel.provider,
+            providerId: selectedModel.providerId
+          }),
+          {
+            status: 400,
+            statusText: 'Bad Request',
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }
+        )
+      }
+    }
+
     if (
       !isProviderEnabled(selectedModel.providerId, selectedModel) ||
       selectedModel.enabled === false

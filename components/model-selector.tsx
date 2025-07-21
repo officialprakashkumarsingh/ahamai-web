@@ -45,12 +45,47 @@ export function ModelSelector({ models }: ModelSelectorProps) {
     if (savedModel) {
       try {
         const model = JSON.parse(savedModel) as Model
-        setValue(createModelId(model))
+        const modelId = createModelId(model)
+        // Check if the saved model is still available
+        const isModelAvailable = models.some(m => createModelId(m) === modelId && m.enabled)
+        if (isModelAvailable) {
+          setValue(modelId)
+          return
+        } else {
+          console.log('Saved model is no longer available, clearing:', model.name)
+          setCookie('selectedModel', '')
+        }
       } catch (e) {
         console.error('Failed to parse saved model:', e)
+        setCookie('selectedModel', '')
       }
     }
-  }, [])
+    
+    // If no valid saved model, auto-select the first available model
+    const enabledModels = models.filter(m => m.enabled)
+    if (enabledModels.length > 0 && !value) {
+      const firstModel = enabledModels[0]
+      const modelId = createModelId(firstModel)
+      setValue(modelId)
+      
+      // Save the auto-selected model
+      if (firstModel.providerId === 'openai-compatible') {
+        const settings = getOpenAICompatibleSettings()
+        const modelWithConfig = {
+          ...firstModel,
+          openaiCompatibleConfig: {
+            enabled: settings.enabled,
+            apiKey: settings.apiKey,
+            baseURL: settings.baseURL
+          }
+        }
+        setCookie('selectedModel', JSON.stringify(modelWithConfig))
+      } else {
+        setCookie('selectedModel', JSON.stringify(firstModel))
+      }
+      console.log('Auto-selected model:', firstModel.name)
+    }
+  }, [models, value])
 
   const handleModelSelect = (id: string) => {
     const newValue = id === value ? '' : id
