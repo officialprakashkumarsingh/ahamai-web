@@ -1,4 +1,12 @@
-import { Film, Link, Search, Image } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import {
+  CircleHelp,
+  FileDown,
+  Image,
+  Search,
+  Video,
+  BarChart3
+} from 'lucide-react'
 import React from 'react'
 import { Badge } from './ui/badge'
 
@@ -17,24 +25,28 @@ export const ToolBadge: React.FC<ToolBadgeProps> = ({
 }) => {
   const toolType = type || tool || ''
   
-  const icon: Record<string, React.ReactNode> = {
-    search: <Search size={14} />,
-    retrieve: <Link size={14} />,
-    videoSearch: <Film size={14} />,
-    generate_image: <Image size={14} aria-label="Image generation" />
+  const toolIcons: Record<string, React.ReactNode> = {
+    search: <Search size={14} aria-label="Search" />,
+    retrieve: <FileDown size={14} aria-label="Retrieve" />,
+    videoSearch: <Video size={14} aria-label="Video search" />,
+    ask_question: <CircleHelp size={14} aria-label="Ask question" />,
+    generate_image: <Image size={14} aria-label="Image generation" />,
+    generate_chart: <BarChart3 size={14} aria-label="Chart generation" />
   }
 
-  const labels: Record<string, string> = {
+  const toolLabels: Record<string, string> = {
     search: 'Search',
     retrieve: 'Retrieve',
     videoSearch: 'Video Search',
-    generate_image: 'Image Generation'
+    ask_question: 'Ask Question',
+    generate_image: 'Image Generation',
+    generate_chart: 'Chart Generation'
   }
 
   return (
     <Badge className={className} variant={'secondary'}>
-      {icon[toolType]}
-      <span className="ml-1">{children || labels[toolType]}</span>
+      {toolIcons[toolType]}
+      <span className="ml-1">{children || toolLabels[toolType]}</span>
     </Badge>
   )
 }

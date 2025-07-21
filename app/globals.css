@@ -181,4 +181,40 @@
   }
 }
 
+/* Mobile-specific chat optimizations */
+@layer components {
+  /* Fix code block width on mobile */
+  @media (max-width: 640px) {
+    pre {
+      max-width: calc(100vw - 3rem);
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Better message padding on mobile */
+    .message-content {
+      padding-left: 1rem;
+      padding-right: 1rem;
+      max-width: 100%;
+    }
+    
+    /* Optimize chat input on mobile */
+    .chat-input-container {
+      padding: 0.75rem;
+    }
+    
+    /* Fix collapsible message layout on mobile */
+    .collapsible-message-content {
+      padding-left: 0.5rem;
+      padding-right: 0.5rem;
+    }
+  }
+  
+  /* Prevent UI freeze during generation */
+  .generating-content {
+    will-change: transform;
+    transform: translateZ(0);
+  }
+}
+
 

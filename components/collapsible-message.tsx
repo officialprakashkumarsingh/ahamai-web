@@ -30,13 +30,13 @@ export function CollapsibleMessage({
   showBorder = true,
   showIcon = true
 }: CollapsibleMessageProps) {
-  const content = <div className="flex-1">{children}</div>
+  const content = <div className="flex-1 message-content">{children}</div>
 
   return (
     <div className="flex">
       {showIcon && (
         <div className="relative flex flex-col items-center">
-          <div className="w-5">
+          <div className="w-5 shrink-0">
             {role === 'assistant' ? (
               <IconLogo className="size-5" />
             ) : (
@@ -49,40 +49,45 @@ export function CollapsibleMessage({
       {isCollapsible ? (
         <div
           className={cn(
-            'flex-1 rounded-2xl p-3 sm:p-4',
-            showBorder && 'border border-border/50'
+            'flex-1 ml-5 pb-4 collapsible-message-content',
+            'sm:ml-6 sm:pb-6'
           )}
         >
-          <Collapsible
-            open={isOpen}
-            onOpenChange={onOpenChange}
-            className="w-full"
-          >
-            <div className="flex items-center justify-between w-full gap-2">
-              {header && <div className="text-sm w-full">{header}</div>}
-              <CollapsibleTrigger asChild>
-                <button
-                  type="button"
-                  className="rounded-md p-1 hover:bg-accent group"
-                  aria-label={isOpen ? 'Collapse' : 'Expand'}
-                >
-                  <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
-                </button>
-              </CollapsibleTrigger>
-            </div>
-            <CollapsibleContent className="data-[state=closed]:animate-collapse-up data-[state=open]:animate-collapse-down">
-              <Separator className="my-3 sm:my-4 border-border/50" />
-              {content}
+          <Collapsible open={isOpen} onOpenChange={onOpenChange}>
+            <CollapsibleTrigger asChild>
+              <button
+                type="button"
+                className={cn(
+                  'flex w-full items-center justify-between text-left text-sm font-medium transition-colors hover:text-foreground/80',
+                  'px-2 sm:px-0'
+                )}
+              >
+                {header}
+                <ChevronDown
+                  className={cn(
+                    'ml-2 h-4 w-4 shrink-0 transition-transform duration-200',
+                    isOpen ? 'rotate-180' : ''
+                  )}
+                />
+              </button>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <div className={cn('pt-2', showBorder && 'pl-2 border-l')}>
+                {content}
+              </div>
             </CollapsibleContent>
           </Collapsible>
         </div>
       ) : (
         <div
           className={cn(
-            'flex-1 rounded-2xl',
-            role === 'assistant' ? 'px-0 sm:px-0' : 'px-3 sm:px-3'
+            'flex-1 ml-5 pb-4',
+            'sm:ml-6 sm:pb-6',
+            showBorder && 'pl-2 border-l',
+            'collapsible-message-content'
           )}
         >
+          {header && <div className="mb-2">{header}</div>}
           {content}
         </div>
       )}

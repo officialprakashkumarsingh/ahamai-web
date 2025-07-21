@@ -107,10 +107,27 @@ export function ChatPanel({
     }
   }
 
+  const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (
+      e.key === 'Enter' &&
+      !e.shiftKey &&
+      !isComposing &&
+      !enterDisabled
+    ) {
+      if (input.trim().length === 0) {
+        e.preventDefault()
+        return
+      }
+      e.preventDefault()
+      const textarea = e.target as HTMLTextAreaElement
+      textarea.form?.requestSubmit()
+    }
+  }
+
   return (
     <div
       className={cn(
-        'w-full bg-background group/form-container shrink-0',
+        'w-full bg-background group/form-container shrink-0 chat-input-container',
         messages.length > 0 ? 'sticky bottom-0 px-2 sm:px-4 pb-4' : 'px-4 sm:px-6'
       )}
     >
@@ -124,7 +141,7 @@ export function ChatPanel({
       )}
       <form
         onSubmit={handleSubmit}
-        className={cn('max-w-3xl w-full mx-auto relative')}
+        className={cn('max-w-3xl w-full mx-auto relative', isLoading && 'generating-content')}
       >
         {/* Scroll to bottom button - only shown when showScrollToBottomButton is true */}
         {showScrollToBottomButton && messages.length > 0 && (
@@ -149,33 +166,18 @@ export function ChatPanel({
             tabIndex={0}
             onCompositionStart={handleCompositionStart}
             onCompositionEnd={handleCompositionEnd}
-            placeholder="Ask a question..."
+            onChange={handleInputChange}
+            onKeyDown={onKeyDown}
+            placeholder="Ask anything..."
             spellCheck={false}
+            autoFocus
             value={input}
-            disabled={isLoading || isToolInvocationInProgress()}
-            className="resize-none w-full min-h-12 bg-transparent border-0 p-3 sm:p-4 text-sm placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-            onChange={e => {
-              handleInputChange(e)
-              setShowEmptyScreen(e.target.value.length === 0)
-            }}
-            onKeyDown={e => {
-              if (
-                e.key === 'Enter' &&
-                !e.shiftKey &&
-                !isComposing &&
-                !enterDisabled
-              ) {
-                if (input.trim().length === 0) {
-                  e.preventDefault()
-                  return
-                }
-                e.preventDefault()
-                const textarea = e.target as HTMLTextAreaElement
-                textarea.form?.requestSubmit()
-              }
-            }}
-            onFocus={() => setShowEmptyScreen(true)}
-            onBlur={() => setShowEmptyScreen(false)}
+            className={cn(
+              'w-full resize-none bg-transparent pl-4 pr-16 sm:pr-20 pt-4 pb-3 text-sm sm:text-base',
+              'focus:outline-none',
+              'placeholder:text-muted-foreground/60',
+              'min-h-[3rem]'
+            )}
           />
 
           {/* Bottom menu area */}
