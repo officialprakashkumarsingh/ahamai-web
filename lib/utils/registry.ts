@@ -36,7 +36,9 @@ export const registry = createProviderRegistry({
   },
   'openai-compatible': createOpenAI({
     apiKey: process.env.OPENAI_COMPATIBLE_API_KEY,
-    baseURL: process.env.OPENAI_COMPATIBLE_API_BASE_URL
+    baseURL: process.env.OPENAI_COMPATIBLE_API_BASE_URL,
+    compatibility: 'strict', // Ensure OpenAI compatibility
+    fetch: fetch // Explicitly set fetch for better compatibility
   }),
   xai
 })
@@ -47,7 +49,12 @@ function getCustomOpenAIProvider() {
     if (settings.enabled && settings.apiKey && settings.baseURL) {
       return createOpenAI({
         apiKey: settings.apiKey,
-        baseURL: settings.baseURL
+        baseURL: settings.baseURL,
+        compatibility: 'strict', // Ensure OpenAI compatibility
+        fetch: fetch, // Explicitly set fetch for better compatibility
+        headers: {
+          'Content-Type': 'application/json'
+        }
       })
     }
   }
@@ -62,10 +69,23 @@ export function getModel(model: string) {
   if (provider === 'openai-compatible') {
     const customProvider = getCustomOpenAIProvider()
     if (customProvider) {
-      return customProvider(modelName)
+      try {
+        return customProvider(modelName, {
+          // Enable streaming for OpenAI compatible models
+          streamingMode: 'automatic'
+        })
+      } catch (error) {
+        console.error('Error creating custom OpenAI provider model:', error)
+        // Fallback to environment-configured provider
+      }
     }
     // Fallback to environment-configured provider
-    return registry.languageModel(model as Parameters<typeof registry.languageModel>[0])
+    try {
+      return registry.languageModel(model as Parameters<typeof registry.languageModel>[0])
+    } catch (error) {
+      console.error('Error with registry OpenAI compatible model:', error)
+      throw error
+    }
   }
   
   if (model.includes('ollama')) {

@@ -26,11 +26,19 @@ export async function getCustomModels(): Promise<Model[]> {
       headers: {
         'Authorization': `Bearer ${settings.apiKey}`,
         'Content-Type': 'application/json'
-      }
+      },
+      timeout: 10000 // 10 second timeout
     })
 
     if (!response.ok) {
-      console.error('getCustomModels: Failed to fetch models from custom endpoint:', response.statusText)
+      console.error('getCustomModels: Failed to fetch models from custom endpoint:', response.status, response.statusText)
+      // Try to get more details about the error
+      try {
+        const errorText = await response.text()
+        console.error('getCustomModels: Error response body:', errorText)
+      } catch (e) {
+        console.error('getCustomModels: Could not read error response')
+      }
       return []
     }
 
@@ -65,4 +73,44 @@ export function getCustomDefaultModel(): string | null {
   }
   
   return `openai-compatible:${settings.model}`
+}
+
+export async function testOpenAICompatibleEndpoint(settings: { apiKey: string; baseURL: string }): Promise<{ success: boolean; error?: string }> {
+  if (typeof window === 'undefined') {
+    return { success: false, error: 'Can only test from browser' }
+  }
+
+  try {
+    // Test the /models endpoint first
+    const response = await fetch(`${settings.baseURL}/models`, {
+      headers: {
+        'Authorization': `Bearer ${settings.apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      timeout: 10000
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      return { 
+        success: false, 
+        error: `HTTP ${response.status}: ${response.statusText}${errorText ? ` - ${errorText}` : ''}` 
+      }
+    }
+
+    const data = await response.json()
+    if (!data.data || !Array.isArray(data.data)) {
+      return { 
+        success: false, 
+        error: 'Invalid response format: expected { data: [...] }' 
+      }
+    }
+
+    return { success: true }
+  } catch (error) {
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Unknown error' 
+    }
+  }
 }

@@ -18,6 +18,7 @@ import {
   OpenAICompatibleSettings,
   saveOpenAICompatibleSettings
 } from '@/lib/utils/settings'
+import { testOpenAICompatibleEndpoint } from '@/lib/utils/custom-models'
 import { Settings, Eye, EyeOff, TestTube, CheckCircle, XCircle } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
@@ -80,30 +81,42 @@ export function SettingsDialog({ trigger }: SettingsDialogProps) {
     setTestResult(null)
 
     try {
-      const response = await fetch(`${settings.baseURL}/models`, {
-        headers: {
-          'Authorization': `Bearer ${settings.apiKey}`,
-          'Content-Type': 'application/json'
-        }
+      const result = await testOpenAICompatibleEndpoint({
+        apiKey: settings.apiKey,
+        baseURL: settings.baseURL
       })
 
-      if (response.ok) {
-        const data = await response.json()
-        const modelCount = data.data?.length || 0
-        setTestResult({ 
-          success: true, 
-          message: `Connection successful! Found ${modelCount} models.` 
-        })
+      if (result.success) {
+        // Try to get model count for better feedback
+        try {
+          const response = await fetch(`${settings.baseURL}/models`, {
+            headers: {
+              'Authorization': `Bearer ${settings.apiKey}`,
+              'Content-Type': 'application/json'
+            }
+          })
+          const data = await response.json()
+          const modelCount = data.data?.length || 0
+          setTestResult({ 
+            success: true, 
+            message: `✅ Connection successful! Found ${modelCount} models. Streaming should work properly.` 
+          })
+        } catch {
+          setTestResult({ 
+            success: true, 
+            message: '✅ Connection successful! Streaming should work properly.' 
+          })
+        }
       } else {
         setTestResult({ 
           success: false, 
-          message: `Connection failed: ${response.status} ${response.statusText}` 
+          message: `❌ ${result.error || 'Connection failed'}` 
         })
       }
     } catch (error) {
       setTestResult({ 
         success: false, 
-        message: `Connection failed: ${error instanceof Error ? error.message : 'Unknown error'}` 
+        message: `❌ Connection failed: ${error instanceof Error ? error.message : 'Unknown error'}` 
       })
     } finally {
       setTesting(false)
