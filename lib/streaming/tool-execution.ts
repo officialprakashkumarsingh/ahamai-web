@@ -21,6 +21,7 @@ export async function executeToolCall(
   coreMessages: CoreMessage[],
   dataStream: DataStreamWriter,
   model: string,
+  modelConfig: any,
   searchMode: boolean
 ): Promise<ToolExecutionResult> {
   // If search mode is disabled, return empty tool call
@@ -40,7 +41,7 @@ export async function executeToolCall(
 
   // Generate tool selection using XML format
   const toolSelectionResponse = await generateText({
-    model: getModel(model),
+    model: getModel(model, modelConfig),
     system: `You are an intelligent assistant that analyzes conversations to select the most appropriate tools and their parameters.
             You excel at understanding context to determine when and how to use available tools, including crafting effective search queries.
             Current date: ${new Date().toISOString().split('T')[0]}
