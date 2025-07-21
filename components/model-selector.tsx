@@ -3,6 +3,7 @@
 import { Model } from '@/lib/types/models'
 import { getCookie, setCookie } from '@/lib/utils/cookies'
 import { isReasoningModel } from '@/lib/utils/registry'
+import { getOpenAICompatibleSettings } from '@/lib/utils/settings'
 import { Check, ChevronsUpDown, Lightbulb } from 'lucide-react'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
@@ -57,7 +58,21 @@ export function ModelSelector({ models }: ModelSelectorProps) {
     
     const selectedModel = models.find(model => createModelId(model) === newValue)
     if (selectedModel) {
-      setCookie('selectedModel', JSON.stringify(selectedModel))
+      // If it's an OpenAI compatible model, include the current settings
+      if (selectedModel.providerId === 'openai-compatible') {
+        const settings = getOpenAICompatibleSettings()
+        const modelWithConfig = {
+          ...selectedModel,
+          openaiCompatibleConfig: {
+            enabled: settings.enabled,
+            apiKey: settings.apiKey,
+            baseURL: settings.baseURL
+          }
+        }
+        setCookie('selectedModel', JSON.stringify(modelWithConfig))
+      } else {
+        setCookie('selectedModel', JSON.stringify(selectedModel))
+      }
     } else {
       setCookie('selectedModel', '')
     }

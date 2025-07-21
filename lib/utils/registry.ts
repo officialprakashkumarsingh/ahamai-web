@@ -36,7 +36,9 @@ export const registry = createProviderRegistry({
   },
   'openai-compatible': createOpenAI({
     apiKey: process.env.OPENAI_COMPATIBLE_API_KEY,
-    baseURL: process.env.OPENAI_COMPATIBLE_API_BASE_URL
+    baseURL: process.env.OPENAI_COMPATIBLE_API_BASE_URL,
+    compatibility: 'strict', // Ensure OpenAI compatibility
+    fetch: fetch // Explicitly set fetch for better compatibility
   }),
   xai
 })
@@ -47,7 +49,12 @@ function getCustomOpenAIProvider() {
     if (settings.enabled && settings.apiKey && settings.baseURL) {
       return createOpenAI({
         apiKey: settings.apiKey,
-        baseURL: settings.baseURL
+        baseURL: settings.baseURL,
+        compatibility: 'strict', // Ensure OpenAI compatibility
+        fetch: fetch, // Explicitly set fetch for better compatibility
+        headers: {
+          'Content-Type': 'application/json'
+        }
       })
     }
   }
@@ -62,10 +69,20 @@ export function getModel(model: string) {
   if (provider === 'openai-compatible') {
     const customProvider = getCustomOpenAIProvider()
     if (customProvider) {
-      return customProvider(modelName)
+      try {
+        return customProvider(modelName)
+      } catch (error) {
+        console.error('Error creating custom OpenAI provider model:', error)
+        // Fallback to environment-configured provider
+      }
     }
     // Fallback to environment-configured provider
-    return registry.languageModel(model as Parameters<typeof registry.languageModel>[0])
+    try {
+      return registry.languageModel(model as Parameters<typeof registry.languageModel>[0])
+    } catch (error) {
+      console.error('Error with registry OpenAI compatible model:', error)
+      throw error
+    }
   }
   
   if (model.includes('ollama')) {
@@ -114,7 +131,7 @@ export function getModel(model: string) {
   )
 }
 
-export function isProviderEnabled(providerId: string): boolean {
+export function isProviderEnabled(providerId: string, modelConfig?: any): boolean {
   switch (providerId) {
     case 'openai':
       return !!process.env.OPENAI_API_KEY
@@ -135,13 +152,21 @@ export function isProviderEnabled(providerId: string): boolean {
     case 'xai':
       return !!process.env.XAI_API_KEY
     case 'openai-compatible':
-      // Check user settings first, then fallback to environment
+      // If model config is passed (from server), check it first
+      if (modelConfig?.openaiCompatibleConfig) {
+        const config = modelConfig.openaiCompatibleConfig
+        return !!(config.enabled && config.apiKey && config.baseURL)
+      }
+      
+      // Check user settings in browser
       if (typeof window !== 'undefined') {
         const settings = getOpenAICompatibleSettings()
         if (settings.enabled && settings.apiKey && settings.baseURL) {
           return true
         }
       }
+      
+      // Fallback to environment variables
       return (
         !!process.env.OPENAI_COMPATIBLE_API_KEY &&
         !!process.env.OPENAI_COMPATIBLE_API_BASE_URL

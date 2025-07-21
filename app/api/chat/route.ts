@@ -3,6 +3,7 @@ import { createManualToolStreamResponse } from '@/lib/streaming/create-manual-to
 import { createToolCallingStreamResponse } from '@/lib/streaming/create-tool-calling-stream'
 import { Model } from '@/lib/types/models'
 import { isProviderEnabled } from '@/lib/utils/registry'
+
 import { cookies } from 'next/headers'
 
 export const maxDuration = 30
@@ -45,33 +46,30 @@ export async function POST(req: Request) {
     }
 
     if (
-      !isProviderEnabled(selectedModel.providerId) ||
+      !isProviderEnabled(selectedModel.providerId, selectedModel) ||
       selectedModel.enabled === false
     ) {
-      // Try to find an enabled model as fallback
-      const { getModels } = await import('@/lib/config/models')
-      const availableModels = await getModels()
-      const enabledModel = availableModels.find(model => 
-        model.enabled && isProviderEnabled(model.providerId)
-      )
+      // Don't auto-switch models as per user request
+      // Instead provide clear error message about the specific provider
+      const errorMessage = selectedModel.providerId === 'openai-compatible' 
+        ? 'OpenAI Compatible provider is not configured. Please check your API key and base URL in settings.'
+        : `Provider "${selectedModel.provider}" (${selectedModel.providerId}) is not configured or enabled. Please configure the required API keys or select a different model.`
       
-      if (enabledModel) {
-        selectedModel = enabledModel
-      } else {
-        return new Response(
-          JSON.stringify({
-            error: 'No enabled providers found. Please configure at least one AI provider with valid API keys.',
-            details: `Selected provider "${selectedModel.provider}" (${selectedModel.providerId}) is not configured or enabled.`
-          }),
-          {
-            status: 503,
-            statusText: 'Service Unavailable',
-            headers: {
-              'Content-Type': 'application/json'
-            }
+      return new Response(
+        JSON.stringify({
+          error: 'Selected provider not available',
+          details: errorMessage,
+          provider: selectedModel.provider,
+          providerId: selectedModel.providerId
+        }),
+        {
+          status: 503,
+          statusText: 'Service Unavailable',
+          headers: {
+            'Content-Type': 'application/json'
           }
-        )
-      }
+        }
+      )
     }
 
     const supportsToolCalling = selectedModel.toolCallType === 'native'

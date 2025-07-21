@@ -8,6 +8,7 @@ import {
 } from 'ai'
 import { getMaxAllowedTokens, truncateMessages } from '../utils/context-window'
 import { isReasoningModel } from '../utils/registry'
+import { debugStreamingRequest, debugStreamingResponse, debugStreamingError } from '../utils/openai-compatible-debug'
 import { handleStreamFinish } from './handle-stream-finish'
 import { BaseStreamConfig } from './types'
 
@@ -43,6 +44,9 @@ export function createToolCallingStreamResponse(config: BaseStreamConfig) {
           searchMode
         })
 
+        // Debug the streaming request
+        debugStreamingRequest(modelId, researcherConfig)
+
         const result = streamText({
           ...researcherConfig,
           onFinish: async result => {
@@ -68,15 +72,47 @@ export function createToolCallingStreamResponse(config: BaseStreamConfig) {
           }
         })
 
+        // Debug the streaming response
+        debugStreamingResponse(modelId, result)
+
         result.mergeIntoDataStream(dataStream)
       } catch (error) {
         console.error('Stream execution error:', error)
+        
+        // Debug the streaming error
+        debugStreamingError(modelId, error)
+        
+        // If it's an OpenAI compatible model error, provide more context
+        if (modelId.includes('openai-compatible')) {
+          console.error('OpenAI Compatible streaming error:', error)
+          dataStream.writeMessageAnnotation({
+            type: 'error',
+            data: {
+              message: 'OpenAI Compatible model streaming failed. Check your API endpoint configuration.',
+              originalError: error instanceof Error ? error.message : String(error)
+            }
+          })
+        }
         throw error
       }
     },
     onError: error => {
-      // console.error('Stream error:', error)
-      return error instanceof Error ? error.message : String(error)
+      console.error('Stream error:', error)
+      
+      // Provide more descriptive error messages for OpenAI compatible models
+      if (error instanceof Error) {
+        if (error.message.includes('fetch')) {
+          return 'Failed to connect to OpenAI compatible endpoint. Please check your API URL and network connection.'
+        }
+        if (error.message.includes('401') || error.message.includes('unauthorized')) {
+          return 'Invalid API key for OpenAI compatible endpoint. Please check your credentials.'
+        }
+        if (error.message.includes('404')) {
+          return 'OpenAI compatible endpoint not found. Please verify your base URL.'
+        }
+        return error.message
+      }
+      return String(error)
     }
   })
 }
