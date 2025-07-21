@@ -60,7 +60,13 @@ export async function getCustomModels(): Promise<Model[]> {
       providerId: 'openai-compatible',
       enabled: true,
       toolCallType: 'native' as const,
-      toolCallModel: undefined
+      toolCallModel: undefined,
+      // Include the OpenAI compatible configuration for server-side validation
+      openaiCompatibleConfig: {
+        enabled: settings.enabled,
+        apiKey: settings.apiKey,
+        baseURL: settings.baseURL
+      }
     }))
     
     console.log('getCustomModels: processed models:', processedModels)

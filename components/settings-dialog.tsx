@@ -19,6 +19,8 @@ import {
   saveOpenAICompatibleSettings
 } from '@/lib/utils/settings'
 import { testOpenAICompatibleEndpoint } from '@/lib/utils/custom-models'
+import { getCookie, setCookie } from '@/lib/utils/cookies'
+import { Model } from '@/lib/types/models'
 import { Settings, Eye, EyeOff, TestTube, CheckCircle, XCircle } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
@@ -53,6 +55,28 @@ export function SettingsDialog({ trigger }: SettingsDialogProps) {
     }
 
     saveOpenAICompatibleSettings(settings)
+    
+    // Update the selected model cookie if it's an OpenAI compatible model
+    const savedModel = getCookie('selectedModel')
+    if (savedModel) {
+      try {
+        const model = JSON.parse(savedModel) as Model
+        if (model.providerId === 'openai-compatible') {
+          const updatedModel = {
+            ...model,
+            openaiCompatibleConfig: {
+              enabled: settings.enabled,
+              apiKey: settings.apiKey,
+              baseURL: settings.baseURL
+            }
+          }
+          setCookie('selectedModel', JSON.stringify(updatedModel))
+        }
+      } catch (e) {
+        console.error('Failed to update selected model config:', e)
+      }
+    }
+    
     toast.success('Settings saved successfully')
     setOpen(false)
     

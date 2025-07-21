@@ -131,7 +131,7 @@ export function getModel(model: string) {
   )
 }
 
-export function isProviderEnabled(providerId: string): boolean {
+export function isProviderEnabled(providerId: string, modelConfig?: any): boolean {
   switch (providerId) {
     case 'openai':
       return !!process.env.OPENAI_API_KEY
@@ -152,13 +152,21 @@ export function isProviderEnabled(providerId: string): boolean {
     case 'xai':
       return !!process.env.XAI_API_KEY
     case 'openai-compatible':
-      // Check user settings first, then fallback to environment
+      // If model config is passed (from server), check it first
+      if (modelConfig?.openaiCompatibleConfig) {
+        const config = modelConfig.openaiCompatibleConfig
+        return !!(config.enabled && config.apiKey && config.baseURL)
+      }
+      
+      // Check user settings in browser
       if (typeof window !== 'undefined') {
         const settings = getOpenAICompatibleSettings()
         if (settings.enabled && settings.apiKey && settings.baseURL) {
           return true
         }
       }
+      
+      // Fallback to environment variables
       return (
         !!process.env.OPENAI_COMPATIBLE_API_KEY &&
         !!process.env.OPENAI_COMPATIBLE_API_BASE_URL

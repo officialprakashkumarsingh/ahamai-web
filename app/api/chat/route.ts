@@ -3,6 +3,7 @@ import { createManualToolStreamResponse } from '@/lib/streaming/create-manual-to
 import { createToolCallingStreamResponse } from '@/lib/streaming/create-tool-calling-stream'
 import { Model } from '@/lib/types/models'
 import { isProviderEnabled } from '@/lib/utils/registry'
+
 import { cookies } from 'next/headers'
 
 export const maxDuration = 30
@@ -45,7 +46,7 @@ export async function POST(req: Request) {
     }
 
     if (
-      !isProviderEnabled(selectedModel.providerId) ||
+      !isProviderEnabled(selectedModel.providerId, selectedModel) ||
       selectedModel.enabled === false
     ) {
       // Don't auto-switch models as per user request

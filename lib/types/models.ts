@@ -6,4 +6,9 @@ export interface Model {
   enabled: boolean
   toolCallType: 'native' | 'manual'
   toolCallModel?: string
+  openaiCompatibleConfig?: {
+    enabled: boolean
+    apiKey: string
+    baseURL: string
+  }
 }
