@@ -55,6 +55,9 @@ export function SettingsDialog({ trigger }: SettingsDialogProps) {
     toast.success('Settings saved successfully')
     setOpen(false)
     
+    // Dispatch custom event to notify components of settings change
+    window.dispatchEvent(new CustomEvent('settings-updated'))
+    
     // Refresh the page to apply new settings
     window.location.reload()
   }

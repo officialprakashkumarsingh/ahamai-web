@@ -30,7 +30,9 @@ export async function getCustomModels(): Promise<Model[]> {
       name: model.id,
       provider: 'OpenAI Compatible',
       providerId: 'openai-compatible',
-      enabled: true
+      enabled: true,
+      toolCallType: 'native' as const,
+      toolCallModel: undefined
     }))
   } catch (error) {
     console.error('Error fetching custom models:', error)
