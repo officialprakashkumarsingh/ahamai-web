@@ -21,14 +21,16 @@ export const Header: React.FC<HeaderProps> = ({ user }) => {
         'w-full h-14 sm:h-16'
       )}
     >
-      {/* Left side - Logo and Sidebar trigger */}
-      <div className="flex items-center gap-2 sm:gap-3">
+      {/* Left side - Sidebar trigger */}
+      <div className="flex items-center">
         <SidebarTrigger className="h-8 w-8 sm:h-10 sm:w-10 -ml-1 sm:-ml-2" />
-        <div className="flex items-center gap-2">
-          <span className="font-pacifico text-lg sm:text-xl text-foreground">
-            AhamAI
-          </span>
-        </div>
+      </div>
+
+      {/* Center - Logo */}
+      <div className="absolute left-1/2 transform -translate-x-1/2">
+        <span className="font-pacifico text-lg sm:text-xl text-foreground">
+          AhamAI
+        </span>
       </div>
 
       {/* Right side - User menu */}

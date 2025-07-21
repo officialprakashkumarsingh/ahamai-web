@@ -67,6 +67,14 @@ export function ChatPanel({
     setMessages([])
     closeArtifact()
     router.push('/')
+    // Clear the input field as well
+    if (inputRef.current) {
+      inputRef.current.value = ''
+    }
+    // Trigger input change to update state
+    handleInputChange({
+      target: { value: '' }
+    } as React.ChangeEvent<HTMLTextAreaElement>)
   }
 
   const isToolInvocationInProgress = () => {
@@ -202,8 +210,10 @@ export function ChatPanel({
                 size={'icon'}
                 variant={'outline'}
                 className={cn(
-                  isLoading && 'animate-pulse', 
-                  'rounded-full min-h-[44px] min-w-[44px] sm:min-h-10 sm:min-w-10 bg-primary hover:bg-primary/90 text-primary-foreground border-primary'
+                  'rounded-full min-h-[44px] min-w-[44px] sm:min-h-10 sm:min-w-10 transition-all duration-200',
+                  isLoading 
+                    ? 'bg-white hover:bg-gray-100 text-red-600 border-red-600 hover:border-red-700' 
+                    : 'bg-primary hover:bg-primary/90 text-primary-foreground border-primary'
                 )}
                 disabled={
                   (input.length === 0 && !isLoading) ||
