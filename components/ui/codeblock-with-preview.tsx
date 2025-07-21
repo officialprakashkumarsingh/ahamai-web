@@ -171,29 +171,22 @@ export const CodeBlockWithPreview: FC<Props> = memo(({ language, value }) => {
   }, [value, language, showPreview, canPreview])
   
   return (
-    <div className="relative w-full">
+    <div className="relative w-full max-w-full">
       <div className="relative">
         <CodeBlock language={language} value={value} />
         {canPreview && (
           <Button
             variant="ghost"
-            size="sm"
-            className="absolute top-1 right-16 text-xs sm:text-sm z-10"
+            size="icon"
+            className="absolute top-1 right-12 sm:right-16 z-10 h-8 w-8 p-0 text-white hover:text-white hover:bg-white/20"
             onClick={() => setShowPreview(!showPreview)}
           >
             {showPreview ? (
-              <>
-                <EyeOff className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                <span className="hidden sm:inline">Hide Preview</span>
-                <span className="sm:hidden">Hide</span>
-              </>
+              <EyeOff className="w-3 h-3 sm:w-4 sm:h-4" />
             ) : (
-              <>
-                <Eye className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                <span className="hidden sm:inline">Preview</span>
-                <span className="sm:hidden">View</span>
-              </>
+              <Eye className="w-3 h-3 sm:w-4 sm:h-4" />
             )}
+            <span className="sr-only">{showPreview ? 'Hide Preview' : 'Show Preview'}</span>
           </Button>
         )}
       </div>

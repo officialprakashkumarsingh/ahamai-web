@@ -8,12 +8,18 @@ import { createClient } from '@/lib/supabase/server'
 import { cn } from '@/lib/utils'
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
-import { Inter as FontSans } from 'next/font/google'
+import { Inter as FontSans, Pacifico } from 'next/font/google'
 import './globals.css'
 
 const fontSans = FontSans({
   subsets: ['latin'],
   variable: '--font-sans'
+})
+
+const pacifico = Pacifico({
+  weight: '400',
+  subsets: ['latin'],
+  variable: '--font-pacifico'
 })
 
 const title = 'AhamAI'
@@ -67,7 +73,8 @@ export default async function RootLayout({
       <body
         className={cn(
           'min-h-screen min-h-dvh flex flex-col font-sans antialiased overflow-hidden',
-          fontSans.variable
+          fontSans.variable,
+          pacifico.variable
         )}
       >
         <ThemeProvider

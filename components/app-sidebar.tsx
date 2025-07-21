@@ -5,8 +5,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarRail,
-  SidebarTrigger
+  SidebarRail
 } from '@/components/ui/sidebar'
 import { cn } from '@/lib/utils'
 import { Plus } from 'lucide-react'
@@ -22,9 +21,8 @@ export default function AppSidebar() {
       <SidebarHeader className="flex flex-row justify-between items-center">
         <Link href="/" className="flex items-center gap-2 px-2 py-3">
           <IconLogo className={cn('size-5')} />
-          <span className="font-semibold text-sm">AhamAI</span>
+          <span className="font-pacifico text-sm text-foreground">AhamAI</span>
         </Link>
-        <SidebarTrigger />
       </SidebarHeader>
       <SidebarContent className="flex flex-col px-2 py-4 h-full">
         <SidebarMenu>
@@ -32,7 +30,7 @@ export default function AppSidebar() {
             <SidebarMenuButton asChild>
               <Link href="/" className="flex items-center gap-2">
                 <Plus className="size-4" />
-                <span>New</span>
+                <span>New Chat</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

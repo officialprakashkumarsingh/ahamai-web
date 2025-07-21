@@ -82,57 +82,68 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
   }
 
   return (
-    <div className="relative w-full font-sans codeblock bg-neutral-800">
-      <div className="flex items-center justify-between w-full px-6 py-1 pr-4 bg-neutral-700 text-zinc-100">
-        <span className="text-xs lowercase">{language}</span>
+    <div className="relative w-full max-w-full font-sans codeblock bg-neutral-800 rounded-lg overflow-hidden">
+      <div className="flex items-center justify-between w-full px-3 sm:px-6 py-1 pr-2 sm:pr-4 bg-neutral-700 text-zinc-100">
+        <span className="text-xs lowercase truncate">{language}</span>
         <div className="flex items-center space-x-1">
           <Button
             variant="ghost"
-            className="focus-visible:ring-1"
+            className="focus-visible:ring-1 h-8 w-8 p-0"
             onClick={downloadAsFile}
             size="icon"
           >
-            <Download className="w-4 h-4" />
+            <Download className="w-3 h-3 sm:w-4 sm:h-4" />
             <span className="sr-only">Download</span>
           </Button>
           <Button
             variant="ghost"
             size="icon"
-            className="text-xs focus-visible:ring-1 focus-visible:ring-offset-0"
+            className="text-xs focus-visible:ring-1 focus-visible:ring-offset-0 h-8 w-8 p-0"
             onClick={onCopy}
           >
             {isCopied ? (
-              <Check className="w-4 h-4" />
+              <Check className="w-3 h-3 sm:w-4 sm:h-4" />
             ) : (
-              <Copy className="w-4 h-4" />
+              <Copy className="w-3 h-3 sm:w-4 sm:h-4" />
             )}
             <span className="sr-only">Copy code</span>
           </Button>
         </div>
       </div>
-      <SyntaxHighlighter
-        language={language}
-        style={coldarkDark}
-        PreTag="div"
-        showLineNumbers
-        customStyle={{
-          margin: 0,
-          width: '100%',
-          background: 'transparent',
-          padding: '1.5rem 1rem'
-        }}
-        lineNumberStyle={{
-          userSelect: 'none'
-        }}
-        codeTagProps={{
-          style: {
-            fontSize: '0.9rem',
-            fontFamily: 'var(--font-mono)'
-          }
-        }}
-      >
-        {value}
-      </SyntaxHighlighter>
+      <div className="overflow-x-auto max-w-full">
+        <SyntaxHighlighter
+          language={language}
+          style={coldarkDark}
+          PreTag="div"
+          showLineNumbers
+          customStyle={{
+            margin: 0,
+            width: '100%',
+            background: 'transparent',
+            padding: '1rem 0.75rem',
+            fontSize: '0.8rem',
+            lineHeight: '1.4',
+            maxWidth: '100%',
+            overflowX: 'auto'
+          }}
+          lineNumberStyle={{
+            userSelect: 'none',
+            fontSize: '0.75rem',
+            minWidth: '2em',
+            paddingRight: '1em'
+          }}
+          codeTagProps={{
+            style: {
+              fontSize: '0.8rem',
+              fontFamily: 'var(--font-mono), Consolas, "Courier New", monospace',
+              whiteSpace: 'pre',
+              wordBreak: 'normal'
+            }
+          }}
+        >
+          {value}
+        </SyntaxHighlighter>
+      </div>
     </div>
   )
 })
