@@ -52,13 +52,19 @@ async function testModelsEndpoint(settings: { apiKey: string; baseURL: string })
   const startTime = Date.now()
   
   try {
+    // Create abort controller for timeout
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 10000)
+    
     const response = await fetch(`${settings.baseURL}/models`, {
       headers: {
         'Authorization': `Bearer ${settings.apiKey}`,
         'Content-Type': 'application/json'
       },
-      signal: AbortSignal.timeout(10000) // 10 second timeout
+      signal: controller.signal
     })
+    
+    clearTimeout(timeoutId)
 
     const responseTime = Date.now() - startTime
 
@@ -116,12 +122,19 @@ async function testChatCompletions(
     let testModel = settings.model
     
     if (!testModel) {
+      // Create abort controller for timeout
+      const modelsController = new AbortController()
+      const modelsTimeoutId = setTimeout(() => modelsController.abort(), 10000)
+      
       const modelsResponse = await fetch(`${settings.baseURL}/models`, {
         headers: {
           'Authorization': `Bearer ${settings.apiKey}`,
           'Content-Type': 'application/json'
-        }
+        },
+        signal: modelsController.signal
       })
+      
+      clearTimeout(modelsTimeoutId)
       
       if (modelsResponse.ok) {
         const modelsData = await modelsResponse.json()
@@ -138,6 +151,10 @@ async function testChatCompletions(
       }
     }
 
+    // Create abort controller for timeout
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 15000)
+    
     const response = await fetch(`${settings.baseURL}/chat/completions`, {
       method: 'POST',
       headers: {
@@ -150,8 +167,10 @@ async function testChatCompletions(
         stream: streaming,
         max_tokens: 20
       }),
-      signal: AbortSignal.timeout(15000) // 15 second timeout
+      signal: controller.signal
     })
+    
+    clearTimeout(timeoutId)
 
     const responseTime = Date.now() - startTime
 
@@ -200,19 +219,33 @@ async function testChatCompletions(
           }
         }
 
-        const chunk = new TextDecoder().decode(value)
-        const hasValidFormat = chunk.includes('data:') || chunk.includes('"id"') || chunk.includes('"choices"')
-        
-        return {
-          endpoint,
-          success: hasValidFormat,
-          error: hasValidFormat ? undefined : 'Invalid streaming format',
-          details: {
-            firstChunk: chunk.substring(0, 100),
-            contentType
-          },
-          responseTime
-        }
+              const chunk = new TextDecoder().decode(value)
+      
+      // More comprehensive format validation
+      const hasValidFormat = chunk.includes('data:') || chunk.includes('"id"') || chunk.includes('"choices"')
+      const hasSSEFormat = chunk.includes('data:')
+      const hasOpenAIStructure = chunk.includes('"id"') && chunk.includes('"object"') && chunk.includes('"choices"')
+      
+      let validationMessage = ''
+      if (!hasSSEFormat) {
+        validationMessage = 'Missing SSE format (data: prefix)'
+      } else if (!hasOpenAIStructure) {
+        validationMessage = 'Missing OpenAI structure (id, object, choices)'
+      }
+      
+      return {
+        endpoint,
+        success: hasValidFormat && hasSSEFormat,
+        error: hasValidFormat && hasSSEFormat ? undefined : validationMessage || 'Invalid streaming format',
+        details: {
+          firstChunk: chunk.substring(0, 200),
+          contentType,
+          hasSSEFormat,
+          hasOpenAIStructure,
+          validationMessage: validationMessage || 'Format appears valid'
+        },
+        responseTime
+      }
       } finally {
         reader.releaseLock()
       }

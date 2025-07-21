@@ -70,10 +70,7 @@ export function getModel(model: string) {
     const customProvider = getCustomOpenAIProvider()
     if (customProvider) {
       try {
-        return customProvider(modelName, {
-          // Enable streaming for OpenAI compatible models
-          streamingMode: 'automatic'
-        })
+        return customProvider(modelName)
       } catch (error) {
         console.error('Error creating custom OpenAI provider model:', error)
         // Fallback to environment-configured provider

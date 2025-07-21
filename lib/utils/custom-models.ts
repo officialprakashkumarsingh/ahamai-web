@@ -22,13 +22,20 @@ export async function getCustomModels(): Promise<Model[]> {
 
   try {
     console.log('getCustomModels: fetching models from:', `${settings.baseURL}/models`)
+    
+    // Create abort controller for timeout
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 10000)
+    
     const response = await fetch(`${settings.baseURL}/models`, {
       headers: {
         'Authorization': `Bearer ${settings.apiKey}`,
         'Content-Type': 'application/json'
       },
-      timeout: 10000 // 10 second timeout
+      signal: controller.signal
     })
+    
+    clearTimeout(timeoutId)
 
     if (!response.ok) {
       console.error('getCustomModels: Failed to fetch models from custom endpoint:', response.status, response.statusText)
@@ -82,13 +89,19 @@ export async function testOpenAICompatibleEndpoint(settings: { apiKey: string; b
 
   try {
     // Test the /models endpoint first
+    // Create abort controller for timeout
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 10000)
+    
     const response = await fetch(`${settings.baseURL}/models`, {
       headers: {
         'Authorization': `Bearer ${settings.apiKey}`,
         'Content-Type': 'application/json'
       },
-      timeout: 10000
+      signal: controller.signal
     })
+    
+    clearTimeout(timeoutId)
 
     if (!response.ok) {
       const errorText = await response.text()
