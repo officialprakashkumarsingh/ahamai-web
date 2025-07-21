@@ -8,6 +8,7 @@ import { ChatRequestOptions } from 'ai'
 import { Message } from 'ai/react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
+import { useModels } from '@/hooks/use-models'
 import { ChatMessages } from './chat-messages'
 import { ChatPanel } from './chat-panel'
 
@@ -22,7 +23,7 @@ export function Chat({
   id,
   savedMessages = [],
   query,
-  models
+  models: serverModels
 }: {
   id: string
   savedMessages?: Message[]
@@ -31,6 +32,9 @@ export function Chat({
 }) {
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [isAtBottom, setIsAtBottom] = useState(true)
+  
+  // Use the custom hook to load both server and client models
+  const { models } = useModels(serverModels)
 
   const {
     messages,

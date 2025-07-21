@@ -69,6 +69,9 @@ export function ModelSelector({ models }: ModelSelectorProps) {
   const groupedModels = groupModelsByProvider(models)
   const hasEnabledModels = Object.keys(groupedModels).length > 0
 
+  console.log('ModelSelector - Total models:', models.length)
+  console.log('ModelSelector - Grouped models:', groupedModels)
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
