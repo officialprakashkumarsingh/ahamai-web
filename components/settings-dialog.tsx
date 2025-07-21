@@ -57,9 +57,6 @@ export function SettingsDialog({ trigger }: SettingsDialogProps) {
     
     // Dispatch custom event to notify components of settings change
     window.dispatchEvent(new CustomEvent('settings-updated'))
-    
-    // Refresh the page to apply new settings
-    window.location.reload()
   }
 
   const handleClear = () => {

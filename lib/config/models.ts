@@ -1,6 +1,5 @@
 import { Model } from '@/lib/types/models'
 import { getBaseUrl } from '@/lib/utils/url'
-import { getCustomModels } from '@/lib/utils/custom-models'
 import defaultModels from './default-models.json'
 
 export function validateModel(model: any): model is Model {
@@ -17,8 +16,6 @@ export function validateModel(model: any): model is Model {
 }
 
 export async function getModels(): Promise<Model[]> {
-  let configModels: Model[] = []
-  
   try {
     // Get the base URL using the centralized utility function
     const baseUrlObj = await getBaseUrl()
@@ -53,7 +50,7 @@ export async function getModels(): Promise<Model[]> {
       const config = JSON.parse(text)
       if (Array.isArray(config.models) && config.models.every(validateModel)) {
         console.log('Successfully loaded models from URL')
-        configModels = config.models
+        return config.models
       }
     } catch (error: any) {
       // Fallback to default models if fetch fails
@@ -67,29 +64,15 @@ export async function getModels(): Promise<Model[]> {
         defaultModels.models.every(validateModel)
       ) {
         console.log('Successfully loaded default models')
-        configModels = defaultModels.models
+        return defaultModels.models
       }
     }
   } catch (error) {
     console.warn('Failed to load models:', error)
   }
 
-  // Load custom models from user settings
-  let customModels: Model[] = []
-  try {
-    customModels = await getCustomModels()
-    console.log('Successfully loaded custom models:', customModels.length)
-  } catch (error) {
-    console.warn('Failed to load custom models:', error)
-  }
-
-  // Combine config models and custom models
-  const allModels = [...configModels, ...customModels]
-  
-  if (allModels.length === 0) {
-    console.warn('All attempts to load models failed, returning empty array')
-  }
-
-  return allModels
+  // Last resort: return empty array
+  console.warn('All attempts to load models failed, returning empty array')
+  return []
 }
 

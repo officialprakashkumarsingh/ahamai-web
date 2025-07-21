@@ -3,7 +3,6 @@
 import { Model } from '@/lib/types/models'
 import { getCookie, setCookie } from '@/lib/utils/cookies'
 import { isReasoningModel } from '@/lib/utils/registry'
-import { getOpenAICompatibleSettings } from '@/lib/utils/settings'
 import { Check, ChevronsUpDown, Lightbulb } from 'lucide-react'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
@@ -19,25 +18,9 @@ import {
 } from './ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover'
 
-function isProviderEnabledClientSide(providerId: string): boolean {
-  // For openai-compatible, check if user has configured custom settings
-  if (providerId === 'openai-compatible') {
-    if (typeof window !== 'undefined') {
-      const settings = getOpenAICompatibleSettings()
-      if (settings.enabled && settings.apiKey && settings.baseURL) {
-        return true
-      }
-    }
-  }
-  
-  // For other providers, we assume they're enabled if the model exists in the list
-  // (server-side filtering should have already handled environment variables)
-  return true
-}
-
 function groupModelsByProvider(models: Model[]) {
   return models
-    .filter(model => model.enabled && isProviderEnabledClientSide(model.providerId))
+    .filter(model => model.enabled)
     .reduce((groups, model) => {
       const provider = model.provider
       if (!groups[provider]) {
@@ -55,7 +38,6 @@ interface ModelSelectorProps {
 export function ModelSelector({ models }: ModelSelectorProps) {
   const [open, setOpen] = useState(false)
   const [value, setValue] = useState('')
-  const [, forceUpdate] = useState(0)
 
   useEffect(() => {
     const savedModel = getCookie('selectedModel')
@@ -66,22 +48,6 @@ export function ModelSelector({ models }: ModelSelectorProps) {
       } catch (e) {
         console.error('Failed to parse saved model:', e)
       }
-    }
-  }, [])
-
-  // Listen for storage changes to update when custom settings change
-  useEffect(() => {
-    const handleStorageChange = () => {
-      forceUpdate(prev => prev + 1)
-    }
-
-    window.addEventListener('storage', handleStorageChange)
-    // Also listen for custom events when settings are saved
-    window.addEventListener('settings-updated', handleStorageChange)
-
-    return () => {
-      window.removeEventListener('storage', handleStorageChange)
-      window.removeEventListener('settings-updated', handleStorageChange)
     }
   }, [])
 
@@ -102,6 +68,9 @@ export function ModelSelector({ models }: ModelSelectorProps) {
   const selectedModel = models.find(model => createModelId(model) === value)
   const groupedModels = groupModelsByProvider(models)
   const hasEnabledModels = Object.keys(groupedModels).length > 0
+
+  console.log('ModelSelector - Total models:', models.length)
+  console.log('ModelSelector - Grouped models:', groupedModels)
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
