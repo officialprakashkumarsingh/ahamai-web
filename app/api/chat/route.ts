@@ -40,9 +40,17 @@ export async function POST(req: Request) {
     if (modelJson) {
       try {
         selectedModel = JSON.parse(modelJson) as Model
+        console.log('Chat API: Selected model from cookie:', {
+          id: selectedModel.id,
+          name: selectedModel.name,
+          provider: selectedModel.provider,
+          providerId: selectedModel.providerId
+        })
       } catch (e) {
         console.error('Failed to parse selected model:', e)
       }
+    } else {
+      console.log('Chat API: No model cookie found, using default model')
     }
 
     // Additional validation for OpenAI-compatible models

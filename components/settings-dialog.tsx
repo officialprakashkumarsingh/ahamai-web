@@ -19,6 +19,7 @@ import {
   saveOpenAICompatibleSettings
 } from '@/lib/utils/settings'
 import { testOpenAICompatibleEndpoint } from '@/lib/utils/custom-models'
+import { debugModelIssues, clearAllModelData } from '@/lib/utils/debug-models'
 import { getCookie, setCookie } from '@/lib/utils/cookies'
 import { Model } from '@/lib/types/models'
 import { Settings, Eye, EyeOff, TestTube, CheckCircle, XCircle } from 'lucide-react'
@@ -250,10 +251,36 @@ export function SettingsDialog({ trigger }: SettingsDialogProps) {
                   variant="outline"
                   onClick={handleTest}
                   disabled={testing || !settings.apiKey || !settings.baseURL}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 flex-1"
                 >
                   <TestTube className="h-4 w-4" />
                   {testing ? 'Testing...' : 'Test Connection'}
+                </Button>
+                
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    debugModelIssues()
+                    toast.info('Check console for debug information')
+                  }}
+                  className="px-3"
+                  title="Debug model issues"
+                >
+                  🔍
+                </Button>
+                
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={() => {
+                    clearAllModelData()
+                    toast.success('Model data cleared. Please refresh the page.')
+                  }}
+                  className="px-3"
+                  title="Clear all model data"
+                >
+                  🧹
                 </Button>
               </div>
 
