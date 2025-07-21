@@ -28,20 +28,20 @@ export function EmptyScreen({
 }) {
   return (
     <div className={`mx-auto w-full transition-all ${className}`}>
-      <div className="bg-background p-2">
-        <div className="mt-2 flex flex-col items-start space-y-2 mb-4">
+      <div className="bg-background p-2 sm:p-4">
+        <div className="mt-2 flex flex-col items-start space-y-1 sm:space-y-2 mb-4">
           {exampleMessages.map((message, index) => (
             <Button
               key={index}
               variant="link"
-              className="h-auto p-0 text-base"
+              className="h-auto p-0 text-sm sm:text-base text-left w-full justify-start"
               name={message.message}
               onClick={async () => {
                 submitMessage(message.message)
               }}
             >
-              <ArrowRight size={16} className="mr-2 text-muted-foreground" />
-              {message.heading}
+              <ArrowRight size={14} className="mr-2 text-muted-foreground flex-shrink-0" />
+              <span className="truncate">{message.heading}</span>
             </Button>
           ))}
         </div>

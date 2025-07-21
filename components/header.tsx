@@ -18,7 +18,7 @@ export const Header: React.FC<HeaderProps> = ({ user }) => {
   return (
     <header
       className={cn(
-        'absolute top-0 right-0 p-2 flex justify-between items-center z-10 backdrop-blur lg:backdrop-blur-none bg-background/80 lg:bg-transparent transition-[width] duration-200 ease-linear',
+        'absolute top-0 right-0 p-2 sm:p-4 flex justify-between items-center z-10 backdrop-blur lg:backdrop-blur-none bg-background/80 lg:bg-transparent transition-[width] duration-200 ease-linear',
         open ? 'md:w-[calc(100%-var(--sidebar-width))]' : 'md:w-full',
         'w-full'
       )}
@@ -26,7 +26,7 @@ export const Header: React.FC<HeaderProps> = ({ user }) => {
       {/* This div can be used for a logo or title on the left if needed */}
       <div></div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1 sm:gap-2">
         {user ? <UserMenu user={user} /> : <GuestMenu />}
       </div>
     </header>
