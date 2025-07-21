@@ -8,12 +8,18 @@ import { createClient } from '@/lib/supabase/server'
 import { cn } from '@/lib/utils'
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
-import { Inter as FontSans } from 'next/font/google'
+import { Inter as FontSans, Pacifico } from 'next/font/google'
 import './globals.css'
 
 const fontSans = FontSans({
   subsets: ['latin'],
   variable: '--font-sans'
+})
+
+const pacifico = Pacifico({
+  weight: '400',
+  subsets: ['latin'],
+  variable: '--font-pacifico'
 })
 
 const title = 'AhamAI'
@@ -66,8 +72,9 @@ export default async function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body
         className={cn(
-          'min-h-screen flex flex-col font-sans antialiased overflow-hidden',
-          fontSans.variable
+          'min-h-screen min-h-dvh flex flex-col font-sans antialiased overflow-hidden',
+          fontSans.variable,
+          pacifico.variable
         )}
       >
         <ThemeProvider
@@ -78,14 +85,20 @@ export default async function RootLayout({
         >
           <SidebarProvider defaultOpen={false}>
             <AppSidebar />
-            <div className="flex flex-col flex-1 min-w-0">
+            <div className="flex flex-col flex-1 min-w-0 relative">
               <Header user={user} />
-              <main className="flex flex-1 min-h-0 relative">
+              <main className="flex flex-1 min-h-0 relative pt-14 sm:pt-16">
                 <ArtifactRoot>{children}</ArtifactRoot>
               </main>
             </div>
           </SidebarProvider>
-          <Toaster />
+          <Toaster 
+            position="top-center"
+            toastOptions={{
+              duration: 4000,
+              className: 'text-sm',
+            }}
+          />
           <Analytics />
         </ThemeProvider>
       </body>

@@ -113,11 +113,40 @@
     @apply bg-background text-foreground;
   }
   
+  /* Font family utilities */
+  .font-pacifico {
+    font-family: var(--font-pacifico);
+  }
+  
+  /* Fix viewport issues on mobile browsers */
+  html {
+    height: 100%;
+    height: 100dvh;
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    height: 100%;
+    height: 100dvh;
+    touch-action: manipulation;
+  }
+  
+  /* Code block optimizations */
+  .codeblock {
+    max-width: 100%;
+    overflow: hidden;
+  }
+  
+  .codeblock > div {
+    max-width: 100%;
+  }
+  
   /* Mobile-specific optimizations */
   @media (max-width: 640px) {
-    /* Better touch targets */
-    button, a, [role="button"] {
+    /* Better touch targets - minimum 44px */
+    button, a, [role="button"], input[type="submit"], input[type="button"] {
       min-height: 44px;
+      min-width: 44px;
     }
     
     /* Prevent zoom on form inputs */
@@ -125,36 +154,73 @@
       font-size: 16px;
     }
     
-    /* Better scroll behavior */
-    html {
-      scroll-behavior: smooth;
-    }
-    
     /* Improve readability on small screens */
     .prose {
       font-size: 14px;
       line-height: 1.6;
     }
+    
+    /* Better spacing for chat messages on mobile */
+    .chat-section {
+      margin-bottom: 1rem !important;
+    }
+    
+    /* Optimize collapsible content for mobile */
+    .collapsible-content {
+      padding: 0.75rem;
+    }
+    
+    /* Better mobile layout for form elements */
+    .form-container {
+      padding: 0.75rem;
+    }
+    
+    /* Improve mobile text sizing */
+    .text-sm {
+      font-size: 14px;
+    }
+    
+    /* Code block mobile optimizations */
+    .codeblock {
+      font-size: 12px;
+      margin: 0.5rem 0;
+    }
+    
+    .codeblock pre {
+      padding: 0.75rem !important;
+      font-size: 12px !important;
+      line-height: 1.3 !important;
+    }
+    
+    .codeblock code {
+      font-size: 12px !important;
+      word-break: break-all;
+      white-space: pre-wrap;
+    }
   }
   
-  /* Improve touch scrolling */
+  /* Improve touch scrolling performance */
   .scroll-smooth {
     -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
   }
   
-  /* Fix viewport issues on mobile browsers */
-  html {
-    height: 100%;
-    height: 100dvh;
+  /* Performance optimizations */
+  * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
   
-  body {
-    height: 100%;
-    height: 100dvh;
+  /* Better focus states for accessibility */
+  button:focus-visible,
+  a:focus-visible,
+  [role="button"]:focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
   }
 }
 
-/* Improve mobile readability */
+/* Improve mobile readability and layout */
 @media (max-width: 640px) {
   .prose-sm {
     font-size: 0.9rem;
@@ -173,11 +239,102 @@
   .codeblock {
     max-width: 100%;
     overflow-x: auto;
+    font-size: 13px;
   }
   
-  /* Better spacing for chat messages on mobile */
+  /* Better image handling on mobile */
+  .generated-image {
+    max-width: 100%;
+    height: auto;
+  }
+  
+  /* Optimize search results for mobile */
+  .search-results {
+    gap: 0.5rem;
+  }
+  
+  /* Better button spacing on mobile */
+  .button-group {
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  
+  /* Mobile-optimized artifact container */
+  .artifact-container {
+    margin: 0.5rem 0;
+    padding: 0.75rem;
+  }
+  
+  /* Syntax highlighter mobile fixes */
+  .react-syntax-highlighter {
+    max-width: 100% !important;
+    overflow-x: auto !important;
+  }
+  
+  .react-syntax-highlighter code {
+    font-size: 12px !important;
+    line-height: 1.3 !important;
+  }
+  
+  .react-syntax-highlighter .linenumber {
+    min-width: 2ch !important;
+    font-size: 11px !important;
+  }
+}
+
+/* Desktop optimizations */
+@media (min-width: 641px) {
+  /* Better hover states for desktop */
+  button:hover,
+  a:hover,
+  [role="button"]:hover {
+    transition: all 0.2s ease-in-out;
+  }
+  
+  /* Desktop-specific spacing */
   .chat-section {
-    margin-bottom: 1.5rem !important;
+    margin-bottom: 2rem;
+  }
+  
+  /* Better desktop layout */
+  .desktop-layout {
+    gap: 1.5rem;
+  }
+  
+  /* Desktop code block styling */
+  .codeblock {
+    font-size: 14px;
+  }
+  
+  .codeblock pre {
+    font-size: 14px !important;
+    line-height: 1.4 !important;
+  }
+}
+
+/* Prevent text selection on interactive elements */
+button,
+[role="button"] {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Optimize animations for better performance */
+@media (prefers-reduced-motion: no-preference) {
+  .smooth-transition {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
 

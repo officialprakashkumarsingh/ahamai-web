@@ -1,6 +1,17 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '10mb'
+    }
+  },
   images: {
+    domains: [
+      'image.pollinations.ai',
+      'pollinations.ai',
+      'i.ytimg.com',
+      'lh3.googleusercontent.com'
+    ],
     remotePatterns: [
       {
         protocol: 'https',
@@ -12,15 +23,22 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'lh3.googleusercontent.com',
         port: '',
-        pathname: '/a/**' // Google user content often follows this pattern
+        pathname: '/a/**'
       },
       {
         protocol: 'https',
         hostname: 'image.pollinations.ai',
         port: '',
-        pathname: '/prompt/**'
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'pollinations.ai',
+        port: '',
+        pathname: '/**',
       }
-    ]
+    ],
+    unoptimized: false
   }
 }
 

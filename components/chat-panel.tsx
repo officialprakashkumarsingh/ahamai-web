@@ -67,6 +67,14 @@ export function ChatPanel({
     setMessages([])
     closeArtifact()
     router.push('/')
+    // Clear the input field as well
+    if (inputRef.current) {
+      inputRef.current.value = ''
+    }
+    // Trigger input change to update state
+    handleInputChange({
+      target: { value: '' }
+    } as React.ChangeEvent<HTMLTextAreaElement>)
   }
 
   const isToolInvocationInProgress = () => {
@@ -107,11 +115,14 @@ export function ChatPanel({
     }
   }
 
+  // Check if this is a follow-up conversation
+  const isFollowUp = messages.length > 0
+
   return (
     <div
       className={cn(
         'w-full bg-background group/form-container shrink-0',
-        messages.length > 0 ? 'sticky bottom-0 px-2 sm:px-4 pb-4' : 'px-4 sm:px-6'
+        messages.length > 0 ? 'sticky bottom-0 px-2 sm:px-4 pb-4 pt-2' : 'px-4 sm:px-6'
       )}
     >
       {messages.length === 0 && (
@@ -126,13 +137,13 @@ export function ChatPanel({
         onSubmit={handleSubmit}
         className={cn('max-w-3xl w-full mx-auto relative')}
       >
-        {/* Scroll to bottom button - only shown when showScrollToBottomButton is true */}
+        {/* Scroll to bottom button - optimized positioning */}
         {showScrollToBottomButton && messages.length > 0 && (
           <Button
             type="button"
             variant="outline"
             size="icon"
-            className="absolute -top-10 right-2 sm:right-4 z-20 size-8 rounded-full shadow-md"
+            className="absolute -top-12 right-2 sm:right-4 z-20 size-8 rounded-full shadow-lg bg-background/95 backdrop-blur-sm border"
             onClick={handleScrollToBottom}
             title="Scroll to bottom"
           >
@@ -140,12 +151,12 @@ export function ChatPanel({
           </Button>
         )}
 
-        <div className="relative flex flex-col w-full gap-2 bg-muted rounded-2xl sm:rounded-3xl border border-input">
+        <div className="relative flex flex-col w-full gap-2 bg-muted/60 rounded-2xl sm:rounded-3xl border border-input shadow-sm">
           <Textarea
             ref={inputRef}
             name="input"
-            rows={2}
-            maxRows={5}
+            rows={isFollowUp ? 1 : 2}
+            maxRows={isFollowUp ? 3 : 5}
             tabIndex={0}
             onCompositionStart={handleCompositionStart}
             onCompositionEnd={handleCompositionEnd}
@@ -153,7 +164,10 @@ export function ChatPanel({
             spellCheck={false}
             value={input}
             disabled={isLoading || isToolInvocationInProgress()}
-            className="resize-none w-full min-h-12 bg-transparent border-0 p-3 sm:p-4 text-sm placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+            className={cn(
+              "resize-none w-full bg-transparent border-0 p-3 sm:p-4 text-sm placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50",
+              isFollowUp ? "min-h-10" : "min-h-12"
+            )}
             onChange={e => {
               handleInputChange(e)
               setShowEmptyScreen(e.target.value.length === 0)
@@ -178,19 +192,19 @@ export function ChatPanel({
             onBlur={() => setShowEmptyScreen(false)}
           />
 
-          {/* Bottom menu area */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between p-2 sm:p-3 gap-2 sm:gap-0">
-            <div className="flex items-center gap-2 order-2 sm:order-1">
+          {/* Bottom menu area - Optimized for mobile and desktop */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between p-2 sm:p-3 gap-2 sm:gap-3">
+            <div className="flex items-center gap-2 order-2 sm:order-1 flex-wrap">
               <ModelSelector models={models || []} />
-              <SearchModeToggle />
             </div>
-            <div className="flex items-center gap-2 justify-end order-1 sm:order-2">
+            <div className="flex items-center gap-2 justify-end order-1 sm:order-2 min-h-[44px] sm:min-h-auto">
+              <SearchModeToggle />
               {messages.length > 0 && (
                 <Button
                   variant="outline"
                   size="icon"
                   onClick={handleNewChat}
-                  className="shrink-0 rounded-full group"
+                  className="shrink-0 rounded-full group min-h-[44px] min-w-[44px] sm:min-h-10 sm:min-w-10"
                   type="button"
                   disabled={isLoading || isToolInvocationInProgress()}
                 >
@@ -201,13 +215,21 @@ export function ChatPanel({
                 type={isLoading ? 'button' : 'submit'}
                 size={'icon'}
                 variant={'outline'}
-                className={cn(isLoading && 'animate-pulse', 'rounded-full')}
+                className={cn(
+                  'rounded-full min-h-[44px] min-w-[44px] sm:min-h-10 sm:min-w-10 transition-all duration-200 relative',
+                  isLoading 
+                    ? 'bg-red-600 hover:bg-red-700 text-white border-red-600 hover:border-red-700 animate-pulse' 
+                    : 'bg-gray-700 hover:bg-gray-600 text-white border-gray-700 hover:border-gray-600'
+                )}
                 disabled={
                   (input.length === 0 && !isLoading) ||
                   isToolInvocationInProgress()
                 }
                 onClick={isLoading ? stop : undefined}
               >
+                {isLoading && (
+                  <div className="absolute inset-0 rounded-full border-2 border-white/30 animate-spin border-t-white"></div>
+                )}
                 {isLoading ? <Square size={20} /> : <ArrowUp size={20} />}
               </Button>
             </div>

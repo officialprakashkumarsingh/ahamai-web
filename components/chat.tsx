@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils'
 import { useChat } from '@ai-sdk/react'
 import { ChatRequestOptions } from 'ai'
 import { Message } from 'ai/react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import { toast } from 'sonner'
 import { useModels } from '@/hooks/use-models'
 import { ChatMessages } from './chat-messages'
@@ -33,6 +33,7 @@ export function Chat({
 }) {
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [isAtBottom, setIsAtBottom] = useState(true)
+  const prevMessagesLengthRef = useRef(0)
   
   // Use the custom hook to load both server and client models
   const { models } = useModels(serverModels)
@@ -69,7 +70,7 @@ export function Chat({
 
   const isLoading = status === 'submitted' || status === 'streaming'
 
-  // Convert messages array to sections array
+  // Convert messages array to sections array with memoization
   const sections = useMemo<ChatSection[]>(() => {
     const result: ChatSection[] = []
     let currentSection: ChatSection | null = null
@@ -100,18 +101,21 @@ export function Chat({
     return result
   }, [messages])
 
-  // Detect if scroll container is at the bottom
+  // Detect if scroll container is at the bottom with throttling
   useEffect(() => {
     const container = scrollContainerRef.current
     if (!container) return
 
+    let ticking = false
     const handleScroll = () => {
-      const { scrollTop, scrollHeight, clientHeight } = container
-      const threshold = 50 // threshold in pixels
-      if (scrollHeight - scrollTop - clientHeight < threshold) {
-        setIsAtBottom(true)
-      } else {
-        setIsAtBottom(false)
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const { scrollTop, scrollHeight, clientHeight } = container
+          const threshold = 100 // increased threshold for better UX
+          setIsAtBottom(scrollHeight - scrollTop - clientHeight < threshold)
+          ticking = false
+        })
+        ticking = true
       }
     }
 
@@ -121,34 +125,63 @@ export function Chat({
     return () => container.removeEventListener('scroll', handleScroll)
   }, [])
 
-  // Scroll to the section when a new user message is sent
+  // Auto-scroll to bottom when new messages arrive (with performance optimization)
+  useEffect(() => {
+    const container = scrollContainerRef.current
+    if (!container || !isAtBottom) return
+
+    // Only auto-scroll if messages length increased
+    if (messages.length > prevMessagesLengthRef.current) {
+      requestAnimationFrame(() => {
+        container.scrollTo({
+          top: container.scrollHeight,
+          behavior: 'smooth'
+        })
+      })
+    }
+    
+    prevMessagesLengthRef.current = messages.length
+  }, [messages.length, isAtBottom])
+
+  // Scroll to the section when a new user message is sent (optimized)
+  const scrollToSection = useCallback((sectionId: string) => {
+    requestAnimationFrame(() => {
+      const sectionElement = document.getElementById(`section-${sectionId}`)
+      if (sectionElement) {
+        sectionElement.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start',
+          inline: 'nearest'
+        })
+      }
+    })
+  }, [])
+
   useEffect(() => {
     if (sections.length > 0) {
       const lastMessage = messages[messages.length - 1]
       if (lastMessage && lastMessage.role === 'user') {
-        // If the last message is from user, find the corresponding section
-        const sectionId = lastMessage.id
-        requestAnimationFrame(() => {
-          const sectionElement = document.getElementById(`section-${sectionId}`)
-          sectionElement?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-        })
+        scrollToSection(lastMessage.id)
       }
     }
-  }, [sections, messages])
+  }, [sections.length, messages, scrollToSection])
 
+  // Initialize with saved messages
   useEffect(() => {
-    setMessages(savedMessages)
+    if (savedMessages.length > 0) {
+      setMessages(savedMessages)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
 
-  const onQuerySelect = (query: string) => {
+  const onQuerySelect = useCallback((query: string) => {
     append({
       role: 'user',
       content: query
     })
-  }
+  }, [append])
 
-  const handleUpdateAndReloadMessage = async (
+  const handleUpdateAndReloadMessage = useCallback(async (
     messageId: string,
     newContent: string
   ) => {
@@ -163,9 +196,7 @@ export function Chat({
       if (messageIndex === -1) return
 
       const messagesUpToEdited = messages.slice(0, messageIndex + 1)
-
       setMessages(messagesUpToEdited)
-
       setData(undefined)
 
       await reload({
@@ -178,9 +209,9 @@ export function Chat({
       console.error('Failed to reload after message update:', error)
       toast.error(`Failed to reload conversation: ${(error as Error).message}`)
     }
-  }
+  }, [messages, setMessages, setData, reload, id])
 
-  const handleReloadFrom = async (
+  const handleReloadFrom = useCallback(async (
     messageId: string,
     options?: ChatRequestOptions
   ) => {
@@ -196,13 +227,13 @@ export function Chat({
       }
     }
     return await reload(options)
-  }
+  }, [messages, setMessages, reload])
 
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const onSubmit = useCallback((e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setData(undefined)
     handleSubmit(e)
-  }
+  }, [setData, handleSubmit])
 
   return (
     <div
