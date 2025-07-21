@@ -12,6 +12,7 @@ import {
   wrapLanguageModel
 } from 'ai'
 import { createOllama } from 'ollama-ai-provider'
+import { getOpenAICompatibleSettings } from './settings'
 
 export const registry = createProviderRegistry({
   openai,
@@ -40,9 +41,33 @@ export const registry = createProviderRegistry({
   xai
 })
 
+function getCustomOpenAIProvider() {
+  if (typeof window !== 'undefined') {
+    const settings = getOpenAICompatibleSettings()
+    if (settings.enabled && settings.apiKey && settings.baseURL) {
+      return createOpenAI({
+        apiKey: settings.apiKey,
+        baseURL: settings.baseURL
+      })
+    }
+  }
+  return null
+}
+
 export function getModel(model: string) {
   const [provider, ...modelNameParts] = model.split(':') ?? []
   const modelName = modelNameParts.join(':')
+  
+  // Handle custom OpenAI-compatible provider
+  if (provider === 'openai-compatible') {
+    const customProvider = getCustomOpenAIProvider()
+    if (customProvider) {
+      return customProvider(modelName)
+    }
+    // Fallback to environment-configured provider
+    return registry.languageModel(model as Parameters<typeof registry.languageModel>[0])
+  }
+  
   if (model.includes('ollama')) {
     const ollama = createOllama({
       baseURL: `${process.env.OLLAMA_BASE_URL}/api`
@@ -110,6 +135,13 @@ export function isProviderEnabled(providerId: string): boolean {
     case 'xai':
       return !!process.env.XAI_API_KEY
     case 'openai-compatible':
+      // Check user settings first, then fallback to environment
+      if (typeof window !== 'undefined') {
+        const settings = getOpenAICompatibleSettings()
+        if (settings.enabled && settings.apiKey && settings.baseURL) {
+          return true
+        }
+      }
       return (
         !!process.env.OPENAI_COMPATIBLE_API_KEY &&
         !!process.env.OPENAI_COMPATIBLE_API_BASE_URL

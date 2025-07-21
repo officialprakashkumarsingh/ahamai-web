@@ -15,10 +15,12 @@ import {
   Link2,
   LogIn,
   Palette,
+  Settings,
   Settings2 // Or EllipsisVertical, etc.
 } from 'lucide-react'
 import Link from 'next/link'
 import { ExternalLinkItems } from './external-link-items'
+import { SettingsDialog } from './settings-dialog'
 import { ThemeMenuItems } from './theme-menu-items'
 
 export default function GuestMenu() {
@@ -37,6 +39,15 @@ export default function GuestMenu() {
             <span>Sign In</span>
           </Link>
         </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <SettingsDialog 
+          trigger={
+            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+              <Settings className="mr-2 h-4 w-4" />
+              <span>Settings</span>
+            </DropdownMenuItem>
+          }
+        />
         <DropdownMenuSeparator />
         <DropdownMenuSub>
           <DropdownMenuSubTrigger>
