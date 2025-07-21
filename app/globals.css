@@ -154,4 +154,31 @@
   }
 }
 
+/* Improve mobile readability */
+@media (max-width: 640px) {
+  .prose-sm {
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+  
+  .prose-sm p {
+    margin-bottom: 0.75rem;
+  }
+  
+  .prose-sm pre {
+    margin: 0.75rem 0;
+  }
+  
+  /* Ensure code blocks don't overflow on mobile */
+  .codeblock {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+  
+  /* Better spacing for chat messages on mobile */
+  .chat-section {
+    margin-bottom: 1.5rem !important;
+  }
+}
+
 
