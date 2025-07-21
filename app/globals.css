@@ -215,6 +215,28 @@
     will-change: transform;
     transform: translateZ(0);
   }
+  
+  /* Code block performance optimizations */
+  pre, code {
+    will-change: contents;
+    contain: layout style paint;
+  }
+  
+  /* Optimize rendering during streaming */
+  .streaming-content {
+    contain: layout;
+    will-change: contents;
+  }
+  
+  /* Prevent layout thrashing */
+  .chat-messages {
+    contain: layout style;
+  }
+  
+  /* Optimize virtual scrolling */
+  .message-container {
+    contain: strict;
+  }
 }
 
 

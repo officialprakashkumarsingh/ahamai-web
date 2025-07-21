@@ -86,7 +86,7 @@ export const CodeBlockWithPreview: FC<Props> = memo(({ language, value }) => {
           <Button
             variant="ghost"
             size="icon"
-            className="absolute top-2 right-[4.5rem] h-8 w-8 rounded-md"
+            className="absolute top-2 right-[4.5rem] h-8 w-8 rounded-md text-white hover:text-white/80"
             onClick={() => setShowPreview(!showPreview)}
             title={showPreview ? 'Hide preview' : 'Show preview'}
           >
