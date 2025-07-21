@@ -67,6 +67,7 @@ export function ModelSelector({ models }: ModelSelectorProps) {
 
   const selectedModel = models.find(model => createModelId(model) === value)
   const groupedModels = groupModelsByProvider(models)
+  const hasEnabledModels = Object.keys(groupedModels).length > 0
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -75,66 +76,77 @@ export function ModelSelector({ models }: ModelSelectorProps) {
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="text-sm rounded-full shadow-none focus:ring-0"
+          className="text-sm rounded-full shadow-none focus:ring-0 max-w-[200px] sm:max-w-none truncate"
         >
           {selectedModel ? (
-            <div className="flex items-center space-x-1">
+            <div className="flex items-center space-x-1 min-w-0">
               <Image
                 src={`/providers/logos/${selectedModel.providerId}.svg`}
                 alt={selectedModel.provider}
                 width={18}
                 height={18}
-                className="bg-white rounded-full border"
+                className="bg-white rounded-full border flex-shrink-0"
               />
-              <span className="text-xs font-medium">{selectedModel.name}</span>
+              <span className="text-xs font-medium truncate">{selectedModel.name}</span>
               {isReasoningModel(selectedModel.id) && (
-                <Lightbulb size={12} className="text-accent-blue-foreground" />
+                <Lightbulb size={12} className="text-accent-blue-foreground flex-shrink-0" />
               )}
             </div>
-          ) : (
+          ) : hasEnabledModels ? (
             'Select model'
+          ) : (
+            <span className="text-destructive text-xs">No models available</span>
           )}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-72 p-0" align="start">
         <Command>
-          <CommandInput placeholder="Search models..." />
+          <CommandInput placeholder="Search models..." className="text-sm" />
           <CommandList>
-            <CommandEmpty>No model found.</CommandEmpty>
-            {Object.entries(groupedModels).map(([provider, models]) => (
-              <CommandGroup key={provider} heading={provider}>
-                {models.map(model => {
-                  const modelId = createModelId(model)
-                  return (
-                    <CommandItem
-                      key={modelId}
-                      value={modelId}
-                      onSelect={handleModelSelect}
-                      className="flex justify-between"
-                    >
-                      <div className="flex items-center space-x-2">
-                        <Image
-                          src={`/providers/logos/${model.providerId}.svg`}
-                          alt={model.provider}
-                          width={18}
-                          height={18}
-                          className="bg-white rounded-full border"
-                        />
-                        <span className="text-xs font-medium">
-                          {model.name}
-                        </span>
-                      </div>
-                      <Check
-                        className={`h-4 w-4 ${
-                          value === modelId ? 'opacity-100' : 'opacity-0'
-                        }`}
-                      />
-                    </CommandItem>
-                  )
-                })}
-              </CommandGroup>
-            ))}
+            {!hasEnabledModels ? (
+              <div className="p-4 text-sm text-muted-foreground text-center">
+                <p className="font-medium text-destructive mb-2">No AI providers configured</p>
+                <p className="text-xs">Please configure at least one AI provider with valid API keys to use the chat functionality.</p>
+              </div>
+            ) : (
+              <>
+                <CommandEmpty>No model found.</CommandEmpty>
+                {Object.entries(groupedModels).map(([provider, models]) => (
+                  <CommandGroup key={provider} heading={provider}>
+                    {models.map(model => {
+                      const modelId = createModelId(model)
+                      return (
+                        <CommandItem
+                          key={modelId}
+                          value={modelId}
+                          onSelect={handleModelSelect}
+                          className="flex justify-between"
+                        >
+                          <div className="flex items-center space-x-2 min-w-0">
+                            <Image
+                              src={`/providers/logos/${model.providerId}.svg`}
+                              alt={model.provider}
+                              width={18}
+                              height={18}
+                              className="bg-white rounded-full border flex-shrink-0"
+                            />
+                            <span className="text-xs font-medium truncate">
+                              {model.name}
+                            </span>
+                          </div>
+                          <Check
+                            className={`h-4 w-4 flex-shrink-0 ${
+                              value === modelId ? 'opacity-100' : 'opacity-0'
+                            }`}
+                          />
+                        </CommandItem>
+                      )
+                    })}
+                  </CommandGroup>
+                ))}
+              </>
+            )}
           </CommandList>
         </Command>
       </PopoverContent>

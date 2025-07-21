@@ -16,7 +16,7 @@ const fontSans = FontSans({
   variable: '--font-sans'
 })
 
-const title = 'Morphic'
+const title = 'AhamAI'
 const description =
   'A fully open-source AI-powered answer engine with a generative UI.'
 
@@ -40,7 +40,9 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   minimumScale: 1,
-  maximumScale: 1
+  maximumScale: 5,
+  userScalable: true,
+  viewportFit: 'cover'
 }
 
 export default async function RootLayout({
@@ -64,7 +66,7 @@ export default async function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body
         className={cn(
-          'min-h-screen flex flex-col font-sans antialiased',
+          'min-h-screen flex flex-col font-sans antialiased overflow-hidden',
           fontSans.variable
         )}
       >
@@ -74,11 +76,11 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <SidebarProvider defaultOpen>
+          <SidebarProvider defaultOpen={false}>
             <AppSidebar />
-            <div className="flex flex-col flex-1">
+            <div className="flex flex-col flex-1 min-w-0">
               <Header user={user} />
-              <main className="flex flex-1 min-h-0">
+              <main className="flex flex-1 min-h-0 relative">
                 <ArtifactRoot>{children}</ArtifactRoot>
               </main>
             </div>

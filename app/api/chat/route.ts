@@ -48,13 +48,30 @@ export async function POST(req: Request) {
       !isProviderEnabled(selectedModel.providerId) ||
       selectedModel.enabled === false
     ) {
-      return new Response(
-        `Selected provider is not enabled ${selectedModel.providerId}`,
-        {
-          status: 404,
-          statusText: 'Not Found'
-        }
+      // Try to find an enabled model as fallback
+      const { getModels } = await import('@/lib/config/models')
+      const availableModels = await getModels()
+      const enabledModel = availableModels.find(model => 
+        model.enabled && isProviderEnabled(model.providerId)
       )
+      
+      if (enabledModel) {
+        selectedModel = enabledModel
+      } else {
+        return new Response(
+          JSON.stringify({
+            error: 'No enabled providers found. Please configure at least one AI provider with valid API keys.',
+            details: `Selected provider "${selectedModel.provider}" (${selectedModel.providerId}) is not configured or enabled.`
+          }),
+          {
+            status: 503,
+            statusText: 'Service Unavailable',
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }
+        )
+      }
     }
 
     const supportsToolCalling = selectedModel.toolCallType === 'native'

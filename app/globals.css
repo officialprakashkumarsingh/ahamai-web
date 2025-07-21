@@ -112,4 +112,44 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* Mobile-specific optimizations */
+  @media (max-width: 640px) {
+    /* Better touch targets */
+    button, a, [role="button"] {
+      min-height: 44px;
+    }
+    
+    /* Prevent zoom on form inputs */
+    input, textarea, select {
+      font-size: 16px;
+    }
+    
+    /* Better scroll behavior */
+    html {
+      scroll-behavior: smooth;
+    }
+    
+    /* Improve readability on small screens */
+    .prose {
+      font-size: 14px;
+      line-height: 1.6;
+    }
+  }
+  
+  /* Improve touch scrolling */
+  .scroll-smooth {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Fix viewport issues on mobile browsers */
+  html {
+    height: 100%;
+    height: 100dvh;
+  }
+  
+  body {
+    height: 100%;
+    height: 100dvh;
+  }
 }
