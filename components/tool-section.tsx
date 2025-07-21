@@ -5,6 +5,7 @@ import { QuestionConfirmation } from './question-confirmation'
 import RetrieveSection from './retrieve-section'
 import { SearchSection } from './search-section'
 import { VideoSearchSection } from './video-search-section'
+import { ImageGenerationToolSection } from './image-generation-tool-section'
 
 interface ToolSectionProps {
   tool: ToolInvocation
@@ -74,6 +75,14 @@ export function ToolSection({
     case 'retrieve':
       return (
         <RetrieveSection
+          tool={tool}
+          isOpen={isOpen}
+          onOpenChange={onOpenChange}
+        />
+      )
+    case 'generate_image':
+      return (
+        <ImageGenerationToolSection
           tool={tool}
           isOpen={isOpen}
           onOpenChange={onOpenChange}

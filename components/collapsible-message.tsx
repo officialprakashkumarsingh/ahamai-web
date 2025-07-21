@@ -49,7 +49,7 @@ export function CollapsibleMessage({
       {isCollapsible ? (
         <div
           className={cn(
-            'flex-1 rounded-2xl p-4',
+            'flex-1 rounded-2xl p-3 sm:p-4',
             showBorder && 'border border-border/50'
           )}
         >
@@ -71,7 +71,7 @@ export function CollapsibleMessage({
               </CollapsibleTrigger>
             </div>
             <CollapsibleContent className="data-[state=closed]:animate-collapse-up data-[state=open]:animate-collapse-down">
-              <Separator className="my-4 border-border/50" />
+              <Separator className="my-3 sm:my-4 border-border/50" />
               {content}
             </CollapsibleContent>
           </Collapsible>
@@ -80,7 +80,7 @@ export function CollapsibleMessage({
         <div
           className={cn(
             'flex-1 rounded-2xl',
-            role === 'assistant' ? 'px-0' : 'px-3'
+            role === 'assistant' ? 'px-0 sm:px-0' : 'px-3 sm:px-3'
           )}
         >
           {content}
