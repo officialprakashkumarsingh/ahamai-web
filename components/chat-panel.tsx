@@ -3,7 +3,13 @@
 import { Model } from '@/lib/types/models'
 import { cn } from '@/lib/utils'
 import { Message } from 'ai'
-import { ArrowUp, ChevronDown, MessageCirclePlus, Square } from 'lucide-react'
+import {
+  ArrowUp,
+  ChevronDown,
+  MessageCirclePlus,
+  Square,
+  Hammer
+} from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import Textarea from 'react-textarea-autosize'
@@ -13,6 +19,7 @@ import { ModelSelector } from './model-selector'
 import { SearchModeToggle } from './search-mode-toggle'
 import { Button } from './ui/button'
 import { IconLogo } from './ui/icons'
+import { AppBuilderModal } from './app-builder-modal'
 
 interface ChatPanelProps {
   input: string
@@ -29,6 +36,8 @@ interface ChatPanelProps {
   showScrollToBottomButton: boolean
   /** Reference to the scroll container */
   scrollContainerRef: React.RefObject<HTMLDivElement>
+  isAtBottom: boolean
+  addToolResult: (result: any) => void
 }
 
 export function ChatPanel({
@@ -43,7 +52,9 @@ export function ChatPanel({
   append,
   models,
   showScrollToBottomButton,
-  scrollContainerRef
+  scrollContainerRef,
+  isAtBottom,
+  addToolResult
 }: ChatPanelProps) {
   const [showEmptyScreen, setShowEmptyScreen] = useState(false)
   const router = useRouter()
@@ -52,6 +63,7 @@ export function ChatPanel({
   const [isComposing, setIsComposing] = useState(false) // Composition state
   const [enterDisabled, setEnterDisabled] = useState(false) // Disable Enter after composition ends
   const { close: closeArtifact } = useArtifact()
+  const [showAppBuilder, setShowAppBuilder] = useState(false)
 
   const handleCompositionStart = () => setIsComposing(true)
 
@@ -107,10 +119,27 @@ export function ChatPanel({
     }
   }
 
+  const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (
+      e.key === 'Enter' &&
+      !e.shiftKey &&
+      !isComposing &&
+      !enterDisabled
+    ) {
+      if (input.trim().length === 0) {
+        e.preventDefault()
+        return
+      }
+      e.preventDefault()
+      const textarea = e.target as HTMLTextAreaElement
+      textarea.form?.requestSubmit()
+    }
+  }
+
   return (
     <div
       className={cn(
-        'w-full bg-background group/form-container shrink-0',
+        'w-full bg-background group/form-container shrink-0 chat-input-container',
         messages.length > 0 ? 'sticky bottom-0 px-2 sm:px-4 pb-4' : 'px-4 sm:px-6'
       )}
     >
@@ -124,7 +153,7 @@ export function ChatPanel({
       )}
       <form
         onSubmit={handleSubmit}
-        className={cn('max-w-3xl w-full mx-auto relative')}
+        className={cn('max-w-3xl w-full mx-auto relative', isLoading && 'generating-content')}
       >
         {/* Scroll to bottom button - only shown when showScrollToBottomButton is true */}
         {showScrollToBottomButton && messages.length > 0 && (
@@ -149,42 +178,40 @@ export function ChatPanel({
             tabIndex={0}
             onCompositionStart={handleCompositionStart}
             onCompositionEnd={handleCompositionEnd}
-            placeholder="Ask a question..."
+            onChange={handleInputChange}
+            onKeyDown={onKeyDown}
+            placeholder="Ask anything..."
             spellCheck={false}
+            autoFocus
             value={input}
-            disabled={isLoading || isToolInvocationInProgress()}
-            className="resize-none w-full min-h-12 bg-transparent border-0 p-3 sm:p-4 text-sm placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-            onChange={e => {
-              handleInputChange(e)
-              setShowEmptyScreen(e.target.value.length === 0)
-            }}
-            onKeyDown={e => {
-              if (
-                e.key === 'Enter' &&
-                !e.shiftKey &&
-                !isComposing &&
-                !enterDisabled
-              ) {
-                if (input.trim().length === 0) {
-                  e.preventDefault()
-                  return
-                }
-                e.preventDefault()
-                const textarea = e.target as HTMLTextAreaElement
-                textarea.form?.requestSubmit()
-              }
-            }}
-            onFocus={() => setShowEmptyScreen(true)}
-            onBlur={() => setShowEmptyScreen(false)}
+            className={cn(
+              'w-full resize-none bg-transparent pl-4 pr-16 sm:pr-20 pt-4 pb-3 text-sm sm:text-base',
+              'focus:outline-none',
+              'placeholder:text-muted-foreground/60',
+              'min-h-[3rem]'
+            )}
           />
 
-          {/* Bottom menu area */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between p-2 sm:p-3 gap-2 sm:gap-0">
-            <div className="flex items-center gap-2 order-2 sm:order-1">
+          {/* Bottom menu area - Mobile optimized */}
+          <div className="flex items-center justify-between p-2 gap-2">
+            {/* Left side - Model selector and search toggle */}
+            <div className="flex items-center gap-1 flex-1 min-w-0">
               <ModelSelector models={models || []} />
               <SearchModeToggle />
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setShowAppBuilder(!showAppBuilder)}
+                className="shrink-0 rounded-full"
+                type="button"
+                title="App Builder"
+              >
+                <Hammer className="size-4" />
+              </Button>
             </div>
-            <div className="flex items-center gap-2 justify-end order-1 sm:order-2">
+            
+            {/* Right side - Action buttons */}
+            <div className="flex items-center gap-1">
               {messages.length > 0 && (
                 <Button
                   variant="outline"
@@ -222,6 +249,14 @@ export function ChatPanel({
               } as React.ChangeEvent<HTMLTextAreaElement>)
             }}
             className={cn(showEmptyScreen ? 'visible' : 'invisible')}
+          />
+        )}
+
+        {/* App Builder Modal */}
+        {showAppBuilder && (
+          <AppBuilderModal
+            isOpen={showAppBuilder}
+            onClose={() => setShowAppBuilder(false)}
           />
         )}
       </form>

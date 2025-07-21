@@ -116,26 +116,17 @@ export function ChatMessages({
 
   return (
     <div
-      id="scroll-container"
       ref={scrollContainerRef}
-      role="list"
-      aria-roledescription="chat messages"
-      className={cn(
-        'relative size-full pt-16 sm:pt-20 md:pt-24',
-        sections.length > 0 ? 'flex-1 overflow-y-auto' : ''
-      )}
+      className="flex-1 overflow-y-auto scroll-smooth"
     >
-      <div className="relative mx-auto w-full max-w-3xl px-4 sm:px-6 md:px-8">
-        {sections.map((section, sectionIndex) => (
+      <div className={cn("max-w-3xl mx-auto p-4 sm:p-6 chat-messages", isLoading && "streaming-content")}>
+        {sections.map((section, index) => (
           <div
             key={section.id}
-            id={`section-${section.id}`}
-            className="chat-section mb-6 sm:mb-8"
-            style={
-              sectionIndex === sections.length - 1
-                ? { minHeight: 'calc(-228px + 100dvh)' }
-                : {}
-            }
+            className={cn(
+              "mb-4 sm:mb-6 chat-section message-container",
+              index === sections.length - 1 && isLoading && "generating-content"
+            )}
           >
             {/* User message */}
             <div className="flex flex-col gap-2 sm:gap-4 mb-3 sm:mb-4">

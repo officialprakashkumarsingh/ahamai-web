@@ -85,20 +85,15 @@ export const CodeBlockWithPreview: FC<Props> = memo(({ language, value }) => {
         {canPreview && (
           <Button
             variant="ghost"
-            size="sm"
-            className="absolute top-1 right-16 text-xs"
+            size="icon"
+            className="absolute top-2 right-[4.5rem] h-8 w-8 rounded-md text-white hover:text-white/80"
             onClick={() => setShowPreview(!showPreview)}
+            title={showPreview ? 'Hide preview' : 'Show preview'}
           >
             {showPreview ? (
-              <>
-                <EyeOff className="w-4 h-4 mr-1" />
-                Hide Preview
-              </>
+              <EyeOff className="h-4 w-4" />
             ) : (
-              <>
-                <Eye className="w-4 h-4 mr-1" />
-                Preview
-              </>
+              <Eye className="h-4 w-4" />
             )}
           </Button>
         )}

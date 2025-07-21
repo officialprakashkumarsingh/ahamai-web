@@ -236,6 +236,8 @@ export function Chat({
         models={models}
         showScrollToBottomButton={!isAtBottom}
         scrollContainerRef={scrollContainerRef}
+        isAtBottom={isAtBottom}
+        addToolResult={addToolResult}
       />
       
       {/* Debug panel for troubleshooting model issues */}
