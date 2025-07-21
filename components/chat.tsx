@@ -11,6 +11,7 @@ import { toast } from 'sonner'
 import { useModels } from '@/hooks/use-models'
 import { ChatMessages } from './chat-messages'
 import { ChatPanel } from './chat-panel'
+import { DebugModelPanel } from './debug-model-panel'
 
 // Define section structure
 interface ChatSection {
@@ -236,6 +237,9 @@ export function Chat({
         showScrollToBottomButton={!isAtBottom}
         scrollContainerRef={scrollContainerRef}
       />
+      
+      {/* Debug panel for troubleshooting model issues */}
+      <DebugModelPanel />
     </div>
   )
 }

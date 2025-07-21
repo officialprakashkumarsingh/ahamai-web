@@ -62,18 +62,26 @@ function getCustomOpenAIProvider() {
 }
 
 export function getModel(model: string) {
+  console.log('getModel: Processing model string:', model)
+  
   const [provider, ...modelNameParts] = model.split(':') ?? []
   const modelName = modelNameParts.join(':')
   
+  console.log('getModel: Parsed provider:', provider, 'modelName:', modelName)
+  
   // Validate model name to prevent template models from being used
   if (modelName.startsWith('<') && modelName.endsWith('>')) {
+    console.error('getModel: Template model detected:', modelName)
     throw new Error(`Invalid model name: ${modelName}. This appears to be a template placeholder. Please configure your OpenAI-compatible endpoint with a valid model name.`)
   }
   
   // Handle custom OpenAI-compatible provider
   if (provider === 'openai-compatible') {
+    console.log('getModel: Processing OpenAI-compatible model')
+    
     // Additional validation for empty model names
     if (!modelName || modelName.trim() === '') {
+      console.error('getModel: Empty model name for OpenAI-compatible provider')
       throw new Error('OpenAI-compatible model name cannot be empty. Please configure your OpenAI-compatible endpoint with a valid model name.')
     }
     

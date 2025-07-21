@@ -65,23 +65,31 @@ export async function getCustomModels(): Promise<Model[]> {
           console.warn('getCustomModels: Skipping template model:', model.id)
           return false
         }
+        // Additional validation: ensure ID doesn't contain problematic characters
+        if (model.id.includes(':') && !model.id.startsWith('openai-compatible:')) {
+          console.warn('getCustomModels: Skipping model with problematic ID (contains colon):', model.id)
+          return false
+        }
         return true
       })
-      .map((model: any) => ({
-        id: model.id,
-        name: model.id,
-        provider: 'OpenAI Compatible',
-        providerId: 'openai-compatible',
-        enabled: true,
-        toolCallType: 'native' as const,
-        toolCallModel: undefined,
-        // Include the OpenAI compatible configuration for server-side validation
-        openaiCompatibleConfig: {
-          enabled: settings.enabled,
-          apiKey: settings.apiKey,
-          baseURL: settings.baseURL
+      .map((model: any) => {
+        console.log('getCustomModels: Processing model:', model.id)
+        return {
+          id: model.id.trim(), // Ensure no leading/trailing whitespace
+          name: model.id.trim(),
+          provider: 'OpenAI Compatible',
+          providerId: 'openai-compatible',
+          enabled: true,
+          toolCallType: 'native' as const,
+          toolCallModel: undefined,
+          // Include the OpenAI compatible configuration for server-side validation
+          openaiCompatibleConfig: {
+            enabled: settings.enabled,
+            apiKey: settings.apiKey,
+            baseURL: settings.baseURL
+          }
         }
-      }))
+      })
     
     console.log('getCustomModels: processed models:', processedModels)
     return processedModels

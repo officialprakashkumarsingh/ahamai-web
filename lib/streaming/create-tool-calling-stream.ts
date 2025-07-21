@@ -29,7 +29,18 @@ export function createToolCallingStreamResponse(config: BaseStreamConfig) {
   return createDataStreamResponse({
     execute: async (dataStream: DataStreamWriter) => {
       const { messages, model, chatId, searchMode, userId } = config
+      
+      // Debug logging for model structure
+      console.log('Stream: Received model object:', {
+        id: model.id,
+        name: model.name,
+        provider: model.provider,
+        providerId: model.providerId,
+        fullModel: model
+      })
+      
       const modelId = `${model.providerId}:${model.id}`
+      console.log('Stream: Constructed modelId:', modelId)
 
       try {
         const coreMessages = convertToCoreMessages(messages)

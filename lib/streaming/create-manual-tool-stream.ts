@@ -17,7 +17,19 @@ export function createManualToolStreamResponse(config: BaseStreamConfig) {
   return createDataStreamResponse({
     execute: async (dataStream: DataStreamWriter) => {
       const { messages, model, chatId, searchMode, userId } = config
+      
+      // Debug logging for model structure
+      console.log('Manual Stream: Received model object:', {
+        id: model.id,
+        name: model.name,
+        provider: model.provider,
+        providerId: model.providerId,
+        fullModel: model
+      })
+      
       const modelId = `${model.providerId}:${model.id}`
+      console.log('Manual Stream: Constructed modelId:', modelId)
+      
       let toolCallModelId = model.toolCallModel
         ? `${model.providerId}:${model.toolCallModel}`
         : modelId
