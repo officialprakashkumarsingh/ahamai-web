@@ -124,5 +124,3 @@ export const CodeBlockWithPreview: FC<Props> = memo(({ language, value }) => {
 })
 
 CodeBlockWithPreview.displayName = 'CodeBlockWithPreview'
-
-export { CodeBlockWithPreview }

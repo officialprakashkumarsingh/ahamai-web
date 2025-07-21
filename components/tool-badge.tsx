@@ -21,7 +21,7 @@ export const ToolBadge: React.FC<ToolBadgeProps> = ({
     search: <Search size={14} />,
     retrieve: <Link size={14} />,
     videoSearch: <Film size={14} />,
-    generate_image: <Image size={14} />
+    generate_image: <Image size={14} aria-label="Image generation" />
   }
 
   const labels: Record<string, string> = {
