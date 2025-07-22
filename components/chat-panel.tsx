@@ -74,7 +74,7 @@ export function ChatPanel({
       }
     },
     onError: (error) => {
-      toast.error(`Voice input error: ${error}`)
+      toast.error(error)
       stopListening()
     },
     onStart: () => {

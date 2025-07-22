@@ -65,6 +65,7 @@ export function useSpeechRecognition({
   const [isSupported, setIsSupported] = useState(false)
   const [transcript, setTranscript] = useState('')
   const recognitionRef = useRef<SpeechRecognition | null>(null)
+  const intentionalStopRef = useRef(false)
 
   useEffect(() => {
     // Check if speech recognition is supported
@@ -84,6 +85,8 @@ export function useSpeechRecognition({
 
       recognition.addEventListener('end', () => {
         setIsListening(false)
+        // Reset intentional stop flag on end
+        intentionalStopRef.current = false
         onEnd?.()
       })
 
@@ -109,9 +112,40 @@ export function useSpeechRecognition({
 
       recognition.addEventListener('error', (event: SpeechRecognitionErrorEvent) => {
         setIsListening(false)
-        const errorMessage = `Speech recognition error: ${event.error}`
-        console.error(errorMessage, event)
-        onError?.(errorMessage)
+        
+        // Don't show error for intentional stops
+        if (event.error === 'aborted' && intentionalStopRef.current) {
+          intentionalStopRef.current = false
+          return
+        }
+        
+        // Provide user-friendly error messages for common errors
+        let userFriendlyMessage: string
+        switch (event.error) {
+          case 'aborted':
+            userFriendlyMessage = 'Voice input was stopped'
+            break
+          case 'audio-capture':
+            userFriendlyMessage = 'Could not access microphone. Please check your microphone permissions.'
+            break
+          case 'network':
+            userFriendlyMessage = 'Network error occurred during voice recognition'
+            break
+          case 'not-allowed':
+            userFriendlyMessage = 'Microphone access denied. Please allow microphone permissions and try again.'
+            break
+          case 'no-speech':
+            userFriendlyMessage = 'No speech detected. Please try speaking again.'
+            break
+          case 'service-not-allowed':
+            userFriendlyMessage = 'Speech recognition service not available'
+            break
+          default:
+            userFriendlyMessage = `Speech recognition error: ${event.error}`
+        }
+        
+        console.error('Speech recognition error:', event.error, event)
+        onError?.(userFriendlyMessage)
       })
 
       recognitionRef.current = recognition
@@ -127,6 +161,7 @@ export function useSpeechRecognition({
   const startListening = useCallback(() => {
     if (recognitionRef.current && !isListening) {
       setTranscript('')
+      intentionalStopRef.current = false
       try {
         recognitionRef.current.start()
       } catch (error) {
@@ -138,6 +173,7 @@ export function useSpeechRecognition({
 
   const stopListening = useCallback(() => {
     if (recognitionRef.current && isListening) {
+      intentionalStopRef.current = true
       recognitionRef.current.stop()
     }
   }, [isListening])
