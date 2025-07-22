@@ -53,21 +53,43 @@ export async function getCustomModels(): Promise<Model[]> {
     const models = data.data || []
     console.log('getCustomModels: raw models from API:', models)
 
-    const processedModels = models.map((model: any) => ({
-      id: model.id,
-      name: model.id,
-      provider: 'OpenAI Compatible',
-      providerId: 'openai-compatible',
-      enabled: true,
-      toolCallType: 'native' as const,
-      toolCallModel: undefined,
-      // Include the OpenAI compatible configuration for server-side validation
-      openaiCompatibleConfig: {
-        enabled: settings.enabled,
-        apiKey: settings.apiKey,
-        baseURL: settings.baseURL
-      }
-    }))
+    const processedModels = models
+      .filter((model: any) => {
+        // Validate that model has a valid ID
+        if (!model.id || typeof model.id !== 'string') {
+          console.warn('getCustomModels: Skipping model with invalid ID:', model)
+          return false
+        }
+        // Skip template models or invalid model names
+        if (model.id.startsWith('<') && model.id.endsWith('>')) {
+          console.warn('getCustomModels: Skipping template model:', model.id)
+          return false
+        }
+        // Additional validation: ensure ID doesn't contain problematic characters
+        if (model.id.includes(':') && !model.id.startsWith('openai-compatible:')) {
+          console.warn('getCustomModels: Skipping model with problematic ID (contains colon):', model.id)
+          return false
+        }
+        return true
+      })
+      .map((model: any) => {
+        console.log('getCustomModels: Processing model:', model.id)
+        return {
+          id: model.id.trim(), // Ensure no leading/trailing whitespace
+          name: model.id.trim(),
+          provider: 'OpenAI Compatible',
+          providerId: 'openai-compatible',
+          enabled: true,
+          toolCallType: 'native' as const,
+          toolCallModel: undefined,
+          // Include the OpenAI compatible configuration for server-side validation
+          openaiCompatibleConfig: {
+            enabled: settings.enabled,
+            apiKey: settings.apiKey,
+            baseURL: settings.baseURL
+          }
+        }
+      })
     
     console.log('getCustomModels: processed models:', processedModels)
     return processedModels
@@ -77,15 +99,30 @@ export async function getCustomModels(): Promise<Model[]> {
   }
 }
 
-export function getCustomDefaultModel(): string | null {
+export async function getCustomDefaultModel(): Promise<string | null> {
   if (typeof window === 'undefined') return null
   
   const settings = getOpenAICompatibleSettings()
-  if (!settings.enabled || !settings.model) {
+  if (!settings.enabled) {
     return null
   }
   
-  return `openai-compatible:${settings.model}`
+  // If user specified a specific model, use it
+  if (settings.model && settings.model.trim()) {
+    return `openai-compatible:${settings.model}`
+  }
+  
+  // Otherwise, try to get the first available model from the endpoint
+  try {
+    const customModels = await getCustomModels()
+    if (customModels.length > 0) {
+      return `openai-compatible:${customModels[0].id}`
+    }
+  } catch (error) {
+    console.error('getCustomDefaultModel: Failed to get models from endpoint:', error)
+  }
+  
+  return null
 }
 
 export async function testOpenAICompatibleEndpoint(settings: { apiKey: string; baseURL: string }): Promise<{ success: boolean; error?: string }> {

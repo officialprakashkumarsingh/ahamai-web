@@ -46,7 +46,24 @@ export function sanitizeUrl(url: string): string {
 }
 
 export function createModelId(model: Model): string {
-  return `${model.providerId}:${model.id}`
+  // Validate model structure
+  if (!model || !model.providerId || !model.id) {
+    console.error('createModelId: Invalid model structure:', model)
+    throw new Error('Invalid model structure: missing providerId or id')
+  }
+  
+  // Trim whitespace
+  const providerId = model.providerId.trim()
+  const modelId = model.id.trim()
+  
+  if (!providerId || !modelId) {
+    console.error('createModelId: Empty provider or model ID after trimming:', { providerId, modelId })
+    throw new Error('Empty provider ID or model ID')
+  }
+  
+  const result = `${providerId}:${modelId}`
+  console.log('createModelId: Created ID:', result, 'from model:', { id: model.id, providerId: model.providerId })
+  return result
 }
 
 export function getDefaultModelId(models: Model[]): string {

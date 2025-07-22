@@ -199,14 +199,6 @@
       "providerId": "xai",
       "enabled": true,
       "toolCallType": "native"
-    },
-    {
-      "id": "<OPENAI_COMPATIBLE_MODEL>",
-      "name": "<OPENAI_COMPATIBLE_MODEL>",
-      "provider": "OpenAI Compatible",
-      "providerId": "openai-compatible",
-      "enabled": true,
-      "toolCallType": "native"
     }
   ]
 }
