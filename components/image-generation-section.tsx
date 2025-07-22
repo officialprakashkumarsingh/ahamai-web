@@ -102,7 +102,7 @@ export function ImageGenerationSection({ images, isLoading }: ImageGenerationSec
                     fill
                     className="object-cover transition-opacity"
                     sizes="(max-width: 640px) 100vw, 50vw"
-                    unoptimized={false}
+                    unoptimized={true}
                     quality={90}
                     onError={() => handleImageError(image.url)}
                     onLoad={() => handleImageLoad(image.url)}
@@ -126,7 +126,7 @@ export function ImageGenerationSection({ images, isLoading }: ImageGenerationSec
                           alt={image.prompt}
                           fill
                           className="object-contain"
-                          unoptimized={false}
+                          unoptimized={true}
                           quality={100}
                         />
                       </div>

@@ -158,7 +158,14 @@ export function StockDataSection({
         </div>
       ) : (
         <div className="text-center py-8">
-          <p className="text-muted-foreground">Failed to fetch stock data</p>
+          <p className="text-muted-foreground">
+            {result?.error || `Failed to fetch stock data${symbol ? ` for ${symbol.toUpperCase()}` : ''}`}
+          </p>
+          {result?.error?.includes('not found') && (
+            <p className="text-xs text-muted-foreground mt-2">
+              Please verify the stock symbol and try again.
+            </p>
+          )}
         </div>
       )}
     </CollapsibleMessage>

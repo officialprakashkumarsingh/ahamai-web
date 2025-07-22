@@ -17,41 +17,45 @@ export const generateImageTool = tool({
       // Encode the prompt for URL
       const encodedPrompt = encodeURIComponent(prompt)
       
-      // Build the URL with parameters
-      const params = new URLSearchParams({
-        model,
-        width: width.toString(),
-        height: height.toString(),
-        nologo: 'true',
-        enhance: enhance.toString()
-      })
+      // Generate URLs for both models with unique seeds to ensure different results
+      const timestamp = Date.now()
+      const fluxSeed = Math.floor(Math.random() * 1000000)
+      const turboSeed = Math.floor(Math.random() * 1000000)
       
-      const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?${params.toString()}`
+      const fluxUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?model=flux&width=${width}&height=${height}&nologo=true&enhance=${enhance}&seed=${fluxSeed}&_=${timestamp}`
+      const turboUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?model=turbo&width=${width}&height=${height}&nologo=true&enhance=${enhance}&seed=${turboSeed}&_=${timestamp}`
       
-      // Return both models (flux and turbo) for variety
-      const fluxUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?model=flux&width=${width}&height=${height}&nologo=true&enhance=${enhance}`
-      const turboUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?model=turbo&width=${width}&height=${height}&nologo=true&enhance=${enhance}`
+      // Test if images are accessible (optional quick check)
+      const images = [
+        {
+          model: 'flux',
+          url: fluxUrl,
+          prompt: prompt,
+          width: width,
+          height: height
+        },
+        {
+          model: 'turbo', 
+          url: turboUrl,
+          prompt: prompt,
+          width: width,
+          height: height
+        }
+      ]
       
       return {
         success: true,
-        images: [
-          {
-            model: 'flux',
-            url: fluxUrl,
-            prompt: prompt,
-            width: width,
-            height: height
-          },
-          {
-            model: 'turbo',
-            url: turboUrl,
-            prompt: prompt,
-            width: width,
-            height: height
-          }
-        ]
+        images: images,
+        prompt: prompt,
+        model: model,
+        settings: {
+          width,
+          height,
+          enhance
+        }
       }
     } catch (error) {
+      console.error('Image generation error:', error)
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to generate image'

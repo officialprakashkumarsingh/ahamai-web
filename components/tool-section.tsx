@@ -7,6 +7,7 @@ import { SearchSection } from './search-section'
 import { VideoSearchSection } from './video-search-section'
 import { ImageGenerationToolSection } from './image-generation-tool-section'
 import { StockDataSection } from './stock-data-section'
+import { WikipediaSection } from './wikipedia-section'
 
 interface ToolSectionProps {
   tool: ToolInvocation
@@ -92,6 +93,14 @@ export function ToolSection({
     case 'get_stock_data':
       return (
         <StockDataSection
+          tool={tool}
+          isOpen={isOpen}
+          onOpenChange={onOpenChange}
+        />
+      )
+    case 'wikipedia_search':
+      return (
+        <WikipediaSection
           tool={tool}
           isOpen={isOpen}
           onOpenChange={onOpenChange}
