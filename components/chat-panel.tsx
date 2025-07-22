@@ -3,10 +3,12 @@
 import { Model } from '@/lib/types/models'
 import { cn } from '@/lib/utils'
 import { Message } from 'ai'
-import { ArrowUp, ChevronDown, MessageCirclePlus, Square } from 'lucide-react'
+import { ArrowUp, ChevronDown, MessageCirclePlus, Square, Mic, MicOff } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import Textarea from 'react-textarea-autosize'
+import { useSpeechRecognition } from '@/hooks/use-speech-recognition'
+import { toast } from 'sonner'
 import { useArtifact } from './artifact/artifact-context'
 import { EmptyScreen } from './empty-screen'
 import { ModelSelector } from './model-selector'
@@ -52,6 +54,51 @@ export function ChatPanel({
   const [isComposing, setIsComposing] = useState(false) // Composition state
   const [enterDisabled, setEnterDisabled] = useState(false) // Disable Enter after composition ends
   const { close: closeArtifact } = useArtifact()
+
+  // Speech recognition setup
+  const {
+    isListening,
+    isSupported: isSpeechSupported,
+    transcript,
+    startListening,
+    stopListening,
+    resetTranscript
+  } = useSpeechRecognition({
+    onResult: (transcript, isFinal) => {
+      if (isFinal && transcript.trim()) {
+        // Update the input with the final transcript
+        handleInputChange({
+          target: { value: input + (input ? ' ' : '') + transcript.trim() }
+        } as React.ChangeEvent<HTMLTextAreaElement>)
+        resetTranscript()
+      }
+    },
+    onError: (error) => {
+      toast.error(`Voice input error: ${error}`)
+      stopListening()
+    },
+    onStart: () => {
+      toast.success('Listening... Speak now!')
+    },
+    onEnd: () => {
+      if (transcript.trim()) {
+        toast.success('Voice input captured!')
+      }
+    }
+  })
+
+  const toggleVoiceInput = () => {
+    if (!isSpeechSupported) {
+      toast.error('Speech recognition is not supported in your browser')
+      return
+    }
+    
+    if (isListening) {
+      stopListening()
+    } else {
+      startListening()
+    }
+  }
 
   const handleCompositionStart = () => setIsComposing(true)
 
@@ -199,6 +246,29 @@ export function ChatPanel({
             </div>
             <div className="flex items-center gap-2 justify-end order-1 sm:order-2 min-h-[44px] sm:min-h-auto">
               <SearchModeToggle />
+              {/* Voice Input Button */}
+              {isSpeechSupported && (
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={toggleVoiceInput}
+                  className={cn(
+                    "shrink-0 rounded-full group min-h-[44px] min-w-[44px] sm:min-h-10 sm:min-w-10 transition-all",
+                    isListening 
+                      ? 'bg-red-600 hover:bg-red-700 text-white border-red-600 hover:border-red-700 animate-pulse' 
+                      : 'hover:bg-accent hover:text-accent-foreground'
+                  )}
+                  type="button"
+                  disabled={isLoading || isToolInvocationInProgress()}
+                  title={isListening ? 'Stop voice input' : 'Start voice input'}
+                >
+                  {isListening ? (
+                    <MicOff className="size-4" />
+                  ) : (
+                    <Mic className="size-4" />
+                  )}
+                </Button>
+              )}
               {messages.length > 0 && (
                 <Button
                   variant="outline"

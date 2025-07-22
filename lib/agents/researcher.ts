@@ -5,6 +5,7 @@ import { createSearchTool } from '../tools/search'
 import { createVideoSearchTool } from '../tools/video-search'
 import { generateImageTool } from '../tools/image-generation'
 import { stockDataTool } from '../tools/stock'
+import { wikipediaSearchTool } from '../tools/wikipedia'
 import { getModel } from '../utils/registry'
 
 const SYSTEM_PROMPT = `
@@ -20,7 +21,8 @@ When asked a question, you should:
 5. Use the video search tool when looking for video content
 6. **Use the generate_image tool when the user requests image generation or visual content creation**
 7. **Use the get_stock_data tool when the user asks about stock prices, market data, or financial information for specific companies**
-8. Analyze all search results to provide accurate, up-to-date information
+8. **Use the wikipedia_search tool when the user requests broad research about topics, historical information, or encyclopedic knowledge**
+9. Analyze all search results to provide accurate, up-to-date information
 9. Always cite sources using the [number](url) format, matching the order of search results. If multiple sources are relevant, include all of them, and comma separate them. Only use information that has a URL available for citation.
 10. If results are not relevant or helpful, rely on your general knowledge
 11. Provide comprehensive and detailed responses based on search results, ensuring thorough coverage of the user's question
@@ -44,6 +46,13 @@ When using the get_stock_data tool:
 - Accept stock symbols in various formats (AAPL, Apple, $AAPL, etc.)
 - Provide analysis of the stock data including trends and insights
 - Compare multiple stocks when requested
+
+When using the wikipedia_search tool:
+- Use it for broad research on topics requiring encyclopedic knowledge
+- Excellent for historical information, biographical data, scientific concepts
+- Can search in different languages when specified by the user
+- Provides reliable, well-sourced information from Wikipedia
+- Use when user wants comprehensive background information on a subject
 
 Citation Format:
 [number](url)
@@ -81,10 +90,11 @@ export function researcher({
         videoSearch: videoSearchTool,
         ask_question: askQuestionTool,
         generate_image: generateImageTool,
-        get_stock_data: stockDataTool
+        get_stock_data: stockDataTool,
+        wikipedia_search: wikipediaSearchTool
       },
       experimental_activeTools: searchMode
-        ? ['search', 'retrieve', 'videoSearch', 'ask_question', 'generate_image', 'get_stock_data']
+        ? ['search', 'retrieve', 'videoSearch', 'ask_question', 'generate_image', 'get_stock_data', 'wikipedia_search']
         : [],
       maxSteps: searchMode ? 5 : 1,
       experimental_transform: smoothStream()

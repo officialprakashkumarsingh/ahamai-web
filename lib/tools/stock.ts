@@ -110,9 +110,20 @@ export const stockDataTool = tool({
       
     } catch (error) {
       console.error('Stock data fetch error:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      const cleanSymbol = symbol.toUpperCase().trim()
+      
+      // Provide more specific error messages
+      if (errorMessage.includes('Failed to fetch')) {
+        return {
+          success: false,
+          error: `Network error: Unable to fetch stock data for ${cleanSymbol}. Please check your internet connection and try again.`
+        }
+      }
+      
       return {
         success: false,
-        error: `Failed to fetch stock data: ${error instanceof Error ? error.message : 'Unknown error'}`
+        error: `Failed to fetch stock data for ${cleanSymbol}: ${errorMessage}`
       }
     }
   }
