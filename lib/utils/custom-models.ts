@@ -65,11 +65,7 @@ export async function getCustomModels(): Promise<Model[]> {
           console.warn('getCustomModels: Skipping template model:', model.id)
           return false
         }
-        // Additional validation: ensure ID doesn't contain problematic characters
-        if (model.id.includes(':') && !model.id.startsWith('openai-compatible:')) {
-          console.warn('getCustomModels: Skipping model with problematic ID (contains colon):', model.id)
-          return false
-        }
+        // Allow all other valid model IDs, including those with colons (like :free models)
         return true
       })
       .map((model: any) => {
